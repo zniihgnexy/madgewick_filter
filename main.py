@@ -34,22 +34,6 @@ class MadgwickFilter:
 
         return roll, pitch, yaw
 
-
-def eulerAngles(self):
-    # 使用self.q_est计算欧拉角
-    q1, q2, q3, q4 = self.q_est
-    PI = np.pi
-
-    yaw = np.arctan2(2*q2*q3 - 2*q1*q4, 2*q1**2 + 2*q2**2 - 1)
-    pitch = -np.arcsin(2*q2*q4 + 2*q1*q3)
-    roll = np.arctan2(2*q3*q4 - 2*q1*q2, 2*q1**2 + 2*q4**2 - 1)
-
-    yaw *= (180.0 / PI)
-    pitch *= (180.0 / PI)
-    roll *= (180.0 / PI)
-
-    return roll, pitch, yaw
-
 if __name__ == "__main__":
     file_path = 'Rec17.csv'
     
@@ -186,16 +170,16 @@ if __name__ == "__main__":
         processed_df = pd.DataFrame(processed_data_imu2, columns=['Processed_AccX1', 'Processed_AccY1', 'Processed_AccZ1'])
         filtered_df = pd.DataFrame(filtered_data_imu2, columns=['Roll1', 'Pitch1', 'Yaw1'])
         
-        # ax, ay, az = row['AccX(mg).1'], row['AccY(mg).1'], row['AccZ(mg).1']
-        # gx, gy, gz = np.radians([row['GyrX(DPS).1'], row['GyrY(DPS).1'], row['GyrZ(DPS).1']])
+        ax, ay, az = row['AccX(mg).1'], row['AccY(mg).1'], row['AccZ(mg).1']
+        gx, gy, gz = np.radians([row['GyrX(DPS).1'], row['GyrY(DPS).1'], row['GyrZ(DPS).1']])
+                
+        measuredRoll = np.degrees(np.arctan2(ay, az))
+        measuredPitch = np.degrees(np.arctan2(-ax, np.sqrt(ay**2 + az**2)))
+        measuredYaw = 0
         
-        # measuredRoll = np.degrees(np.arctan2(ay, az))
-        # measuredPitch = np.degrees(np.arctan2(-ax, np.sqrt(ay**2 + az**2)))
-        # measuredYaw = 0
-        
-        # compl_filter_imu2.updateRollPitchYaw(measuredRoll, measuredPitch, measuredYaw, gx, gy, gz, DELTA_T)
-        # roll, pitch, yaw = compl_filter_imu2.roll, compl_filter_imu2.pitch, compl_filter_imu2.yaw
-        # compl_data_imu2.append([roll, pitch, yaw])
+        compl_filter_imu2.updateRollPitchYaw(measuredRoll, measuredPitch, measuredYaw, gx, gy, gz, DELTA_T)
+        roll, pitch, yaw = compl_filter_imu2.roll, compl_filter_imu2.pitch, compl_filter_imu2.yaw
+        compl_data_imu2.append([roll, pitch, yaw])
         
 
     print("\nIMU 3")
@@ -221,16 +205,16 @@ if __name__ == "__main__":
         processed_df = pd.DataFrame(processed_data_imu3, columns=['Processed_AccX2', 'Processed_AccY2', 'Processed_AccZ2'])
         filtered_df = pd.DataFrame(filtered_data_imu3, columns=['Roll2', 'Pitch2', 'Yaw2'])
         
-        # ax, ay, az = row['AccX(mg).2'], row['AccY(mg).2'], row['AccZ(mg).2']
-        # gx, gy, gz = np.radians([row['GyrX(DPS).2'], row['GyrY(DPS).2'], row['GyrZ(DPS).2']])
+        ax, ay, az = row['AccX(mg).2'], row['AccY(mg).2'], row['AccZ(mg).2']
+        gx, gy, gz = np.radians([row['GyrX(DPS).2'], row['GyrY(DPS).2'], row['GyrZ(DPS).2']])
         
-        # measuredRoll = np.degrees(np.arctan2(ay, az))
-        # measuredPitch = np.degrees(np.arctan2(-ax, np.sqrt(ay**2 + az**2)))
-        # measuredYaw = 0
+        measuredRoll = np.degrees(np.arctan2(ay, az))
+        measuredPitch = np.degrees(np.arctan2(-ax, np.sqrt(ay**2 + az**2)))
+        measuredYaw = 0
         
-        # compl_filter_imu3.updateRollPitchYaw(measuredRoll, measuredPitch, measuredYaw, gx, gy, gz, DELTA_T)
-        # roll, pitch, yaw = compl_filter_imu3.roll, compl_filter_imu3.pitch, compl_filter_imu3.yaw
-        # compl_data_imu3.append([roll, pitch, yaw])
+        compl_filter_imu3.updateRollPitchYaw(measuredRoll, measuredPitch, measuredYaw, gx, gy, gz, DELTA_T)
+        roll, pitch, yaw = compl_filter_imu3.roll, compl_filter_imu3.pitch, compl_filter_imu3.yaw
+        compl_data_imu3.append([roll, pitch, yaw])
     
     ax_array1 = np.array(ax_list1)
     ay_array1 = np.array(ay_list1)
