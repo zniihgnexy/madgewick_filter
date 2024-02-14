@@ -3,14 +3,15 @@ import numpy as np
 
 class MadgwickFilter:
     def __init__(self, beta=0.1):
+        # adjust beta to get better result
         # Initial quaternion estimate
         self.beta = beta
         self.q_est = np.array([1.0, 0.0, 0.0, 0.0])
     
     def imu_filter(self, ax, ay, az, gx, gy, gz, mx, my, mz):
         gx, gy, gz = np.radians([gx, gy, gz])
-        self.q_est = imu_filter(ax, ay, az, gx, gy, gz)
-        return ax, ay, az, gx, gy, gz, self.q_est
+        self.q_est = imu_filter(ax, ay, az, gx, gy, gz, mx, my, mz, self.q_est, self.beta)
+        return self.q_est
         
     def eulerAngles(self):
         q1, q2, q3, q4 = self.q_est

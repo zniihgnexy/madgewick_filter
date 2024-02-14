@@ -8,31 +8,23 @@ import numpy as np
 import pandas as pd
 from butterworth import butter_lowpass_filter
 import matplotlib.pyplot as plt
+from madgwick_filter import MadgwickFilter
 
-class MadgwickFilter:
-    def __init__(self, beta=0.1):
-        # Initial quaternion estimate
-        self.beta = beta
-        self.q_est = np.array([1.0, 0.0, 0.0, 0.0])
+def complimentary_filter(compl_filter_imu, compl_data_imu, roll, pitch, yaw, gx, gy, gz, DELTA_T):
+    measuredRoll = np.degrees(np.arctan2(ay, az))
+    measuredPitch = np.degrees(np.arctan2(-ax, np.sqrt(ay**2 + az**2)))
+    measuredYaw = 0
     
-    def imu_filter(self, ax, ay, az, gx, gy, gz, mx, my, mz):
-        gx, gy, gz = np.radians([gx, gy, gz])
-        self.q_est = imu_filter(ax, ay, az, gx, gy, gz)
-        return ax, ay, az, gx, gy, gz, self.q_est
-        
-    def eulerAngles(self):
-        q1, q2, q3, q4 = self.q_est
-        PI = np.pi
-        
-        yaw = np.arctan2(2*q2*q3 - 2*q1*q4, 2*q1**2 + 2*q2**2 - 1)
-        pitch = -np.arcsin(2*q2*q4 + 2*q1*q3)
-        roll = np.arctan2(2*q3*q4 - 2*q1*q2, 2*q1**2 + 2*q4**2 - 1)
+    compl_filter_imu.updateRollPitchYaw(measuredRoll, measuredPitch, measuredYaw, gx, gy, gz, DELTA_T)
+    roll, pitch, yaw = compl_filter_imu.roll, compl_filter_imu.pitch, compl_filter_imu.yaw
+    compl_data_imu.append([roll, pitch, yaw])
+    return compl_filter_imu.roll, compl_filter_imu.pitch, compl_filter_imu.yaw
 
-        yaw *= (180.0 / PI)
-        pitch *= (180.0 / PI)
-        roll *= (180.0 / PI)
-
-        return roll, pitch, yaw
+def return_array_filter(array, cutoff, fs, order):
+    array = np.array(array)
+    array_filtered = butter_lowpass_filter(array, cutoff, fs, order)
+    
+    return array_filtered
 
 if __name__ == "__main__":
     file_path = 'Rec17.csv'
@@ -87,11 +79,12 @@ if __name__ == "__main__":
     filter_imu2 = MadgwickFilter()
     filter_imu3 = MadgwickFilter()
     
-    compl_filter_imu1 = Complimentary(gain=0.50)
+    compl_filter_imu1 = Complimentary(gain=0.50) # adjust gain value
     compl_filter_imu2 = Complimentary(gain=0.50)
     compl_filter_imu3 = Complimentary(gain=0.50)
+    compl_filter_imu = Complimentary(gain=0.50)
 
-    DELTA_T = 1/100.0
+    DELTA_T = 1/100.0 # 100Hz, change to the correct one
     PI = np.pi
     cutoff = 15
     fs = 100
@@ -144,6 +137,11 @@ if __name__ == "__main__":
         # print(f"IMU 1 - Roll: {roll}, Pitch: {pitch}, Yaw: {yaw}")
         processed_df = pd.DataFrame(processed_data_imu1, columns=['Processed_AccX', 'Processed_AccY', 'Processed_AccZ'])
         filtered_df = pd.DataFrame(filtered_data_imu1, columns=['Roll', 'Pitch', 'Yaw'])
+        
+        ax, ay, az = row['AccX(mg)'], row['AccY(mg)'], row['AccZ(mg)']
+        gx, gy, gz = np.radians([row['GyrX(DPS)'], row['GyrY(DPS)'], row['GyrZ(DPS)']])
+        
+        compl_filter_imu1.roll, compl_filter_imu1.pitch, compl_filter_imu1.yaw = complimentary_filter(compl_filter_imu1, compl_data_imu1, roll, pitch, yaw, gx, gy, gz, DELTA_T)
 
     print("\nIMU 2")
     for index, row in imu2.iterrows():
@@ -172,15 +170,8 @@ if __name__ == "__main__":
         
         ax, ay, az = row['AccX(mg).1'], row['AccY(mg).1'], row['AccZ(mg).1']
         gx, gy, gz = np.radians([row['GyrX(DPS).1'], row['GyrY(DPS).1'], row['GyrZ(DPS).1']])
-                
-        measuredRoll = np.degrees(np.arctan2(ay, az))
-        measuredPitch = np.degrees(np.arctan2(-ax, np.sqrt(ay**2 + az**2)))
-        measuredYaw = 0
         
-        compl_filter_imu2.updateRollPitchYaw(measuredRoll, measuredPitch, measuredYaw, gx, gy, gz, DELTA_T)
-        roll, pitch, yaw = compl_filter_imu2.roll, compl_filter_imu2.pitch, compl_filter_imu2.yaw
-        compl_data_imu2.append([roll, pitch, yaw])
-        
+        compl_filter_imu2.roll, compl_filter_imu2.pitch, compl_filter_imu2.yaw = complimentary_filter(compl_filter_imu2, compl_data_imu2, roll, pitch, yaw, gx, gy, gz, DELTA_T)
 
     print("\nIMU 3")
     for index, row in imu3.iterrows():
@@ -208,59 +199,48 @@ if __name__ == "__main__":
         ax, ay, az = row['AccX(mg).2'], row['AccY(mg).2'], row['AccZ(mg).2']
         gx, gy, gz = np.radians([row['GyrX(DPS).2'], row['GyrY(DPS).2'], row['GyrZ(DPS).2']])
         
-        measuredRoll = np.degrees(np.arctan2(ay, az))
-        measuredPitch = np.degrees(np.arctan2(-ax, np.sqrt(ay**2 + az**2)))
-        measuredYaw = 0
-        
-        compl_filter_imu3.updateRollPitchYaw(measuredRoll, measuredPitch, measuredYaw, gx, gy, gz, DELTA_T)
-        roll, pitch, yaw = compl_filter_imu3.roll, compl_filter_imu3.pitch, compl_filter_imu3.yaw
-        compl_data_imu3.append([roll, pitch, yaw])
+        compl_filter_imu3.roll, compl_filter_imu3.pitch, compl_filter_imu3.yaw = complimentary_filter(compl_filter_imu3, compl_data_imu3, roll, pitch, yaw, gx, gy, gz, DELTA_T)
     
-    ax_array1 = np.array(ax_list1)
-    ay_array1 = np.array(ay_list1)
-    az_array1 = np.array(az_list1)
-    ax_filtered1 = butter_lowpass_filter(ax_array1, cutoff, fs, order) 
-    ay_filtered1 = butter_lowpass_filter(ay_array1, cutoff, fs, order)
-    az_filtered1 = butter_lowpass_filter(az_array1, cutoff, fs, order)
+    ax_filtered1 = return_array_filter(ax_list1, cutoff, fs, order)
+    ay_filtered1 =  return_array_filter(ay_list1, cutoff, fs, order)
+    az_filtered1 = return_array_filter(az_list1, cutoff, fs, order)
     
-    ax_array2 = np.array(ax_list2)
-    ay_array2 = np.array(ay_list2)
-    az_array2 = np.array(az_list2)
-    ax_filtered2 = butter_lowpass_filter(ax_array2, cutoff, fs, order)
-    ay_filtered2 = butter_lowpass_filter(ay_array2, cutoff, fs, order)
-    az_filtered2 = butter_lowpass_filter(az_array2, cutoff, fs, order)
+    ax_filtered2 = return_array_filter(ax_list2, cutoff, fs, order)
+    ay_filtered2 = return_array_filter(ay_list2, cutoff, fs, order)
+    az_filtered2 = return_array_filter(az_list2, cutoff, fs, order)
     
-    ax_array3 = np.array(ax_list3)
-    ay_array3 = np.array(ay_list3)
-    az_array3 = np.array(az_list3)
-    ax_filtered3 = butter_lowpass_filter(ax_array3, cutoff, fs, order)
-    ay_filtered3 = butter_lowpass_filter(ay_array3, cutoff, fs, order)
-    az_filtered3 = butter_lowpass_filter(az_array3, cutoff, fs, order)
+    ax_filtered3 = return_array_filter(ax_list3, cutoff, fs, order)
+    ay_filtered3 = return_array_filter(ay_list3, cutoff, fs, order)
+    az_filtered3 = return_array_filter(az_list3, cutoff, fs, order)
     
-    # 创建DataFrame来存储每个IMU的处理后数据
+    # original
     df_imu1 = pd.DataFrame(processed_data_imu1, columns=['IMU1_AccX', 'IMU1_AccY', 'IMU1_AccZ'])
     df_imu2 = pd.DataFrame(processed_data_imu2, columns=['IMU2_AccX', 'IMU2_AccY', 'IMU2_AccZ'])
     df_imu3 = pd.DataFrame(processed_data_imu3, columns=['IMU3_AccX', 'IMU3_AccY', 'IMU3_AccZ'])
-    # 创建DataFrame来存储每个IMU的处理后数据
+    # angles from the filter
     angle_imu1 = pd.DataFrame(filtered_data_imu1, columns=['Roll1', 'Pitch1', 'Yaw1'])
     angle_imu2 = pd.DataFrame(filtered_data_imu2, columns=['Roll2', 'Pitch2', 'Yaw2'])
     angle_imu3 = pd.DataFrame(filtered_data_imu3, columns=['Roll3', 'Pitch3', 'Yaw3'])
-    
-    
-    # compl_imu1 = pd.DataFrame(compl_data_imu1, columns=['Roll1', 'Pitch1', 'Yaw1'])
-    # compl_imu2 = pd.DataFrame(compl_data_imu2, columns=['Roll2', 'Pitch2', 'Yaw2'])
-    # compl_imu3 = pd.DataFrame(compl_data_imu3, columns=['Roll3', 'Pitch3', 'Yaw3'])
+    # import pdb; pdb.set_trace()
+    # angles from the complimentary filter
+    compl_imu1 = pd.DataFrame(compl_data_imu1, columns=['Roll1', 'Pitch1', 'Yaw1'])
+    compl_imu2 = pd.DataFrame(compl_data_imu2, columns=['Roll2', 'Pitch2', 'Yaw2'])
+    compl_imu3 = pd.DataFrame(compl_data_imu3, columns=['Roll3', 'Pitch3', 'Yaw3'])
+    # angles from the butterworth filter
+    # filtered_angle_data1 = pd.DataFrame(return_array_filter(filtered_data_imu1, cutoff, fs, order), columns=['Roll1', 'Pitch1', 'Yaw1'])
+    # filtered_angle_data2 = pd.DataFrame(return_array_filter(filtered_data_imu2, cutoff, fs, order), columns=['Roll2', 'Pitch2', 'Yaw2'])
+    # filtered_angle_data3 = pd.DataFrame(return_array_filter(filtered_data_imu3, cutoff, fs, order), columns=['Roll3', 'Pitch3', 'Yaw3'])
     # 将三个DataFrame按列合并
-    Acc_final_df = pd.concat([df_imu1, df_imu2, df_imu3], axis=1)
-    Angle_final_df = pd.concat([angle_imu1, angle_imu2, angle_imu3], axis=1)
-    # compl_final_df = pd.concat([compl_imu1, compl_imu2, compl_imu3], axis=1)
-    
-    # Save the DataFrame to a CSV file
-    Angle_final_df.to_csv('angle_state_imu_data.csv', index=False)
+    Acc_final_df = pd.concat([timestamps, df_imu1, df_imu2, df_imu3], axis=1)
+    Angle_final_df = pd.concat([timestamps, angle_imu1, angle_imu2, angle_imu3], axis=1)
+    compl_final_df = pd.concat([timestamps, compl_imu1, compl_imu2, compl_imu3], axis=1)
+    # filtered_angle_data = pd.concat([timestamps, filtered_angle_data1, filtered_angle_data2, filtered_angle_data3], axis=1)
+
+    Angle_final_df.to_csv('angle_state_imu_angle_data.csv', index=False)
     Acc_final_df.to_csv('processed_imu_Acc_data.csv', index=False)
-    # compl_final_df.to_csv('compl_imu_Acc_data.csv', index=False)
+    compl_final_df.to_csv('compl_imu_Compl_angle_data.csv', index=False)
+    # filtered_angle_data.to_csv('butterworth_filtered_Angle_data.csv', index=False)
     
-    # save the butter worth filtered data to a csv file
     filtered_data1 = pd.DataFrame({'timestamps': timestamps, 'ax_filtered1': ax_filtered1, 'ay_filtered1': ay_filtered1, 'az_filtered1': az_filtered1})
     filtered_data1.to_csv('butterworth_filtered_Acc_imu1.csv', index=False)
     filtered_data2 = pd.DataFrame({'timestamps': timestamps, 'ax_filtered2': ax_filtered2, 'ay_filtered2': ay_filtered2, 'az_filtered2': az_filtered2})
