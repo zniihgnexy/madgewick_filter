@@ -26,22 +26,22 @@ def return_array_filter(array, cutoff, fs, order):
     
     return array_filtered
 
-def imu_position_update(ax, ay, az, imu_positions, dt, original_position):
+def imu_position_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu_positions, dt, original_position):
     # 将加速度从mg转换为m/s^2，注意1g = 9.81m/s^2
     # import pdb; pdb.set_trace()
     
-    ax_m_s2 = ax * 9.81 / 1000
-    ay_m_s2 = ay * 9.81 / 1000
-    az_m_s2 = az * 9.81 / 1000
+    ax_m_s2 = ax * 9.81 / 100
+    ay_m_s2 = ay * 9.81 / 100
+    az_m_s2 = az * 9.81 / 100
 
     if not imu_positions:
         new_position = [0, 0, 0]
     else:
         last_position = imu_positions[-1]
         
-        delta_x = 0.5 * ax_m_s2 * dt ** 2
-        delta_y = 0.5 * ay_m_s2 * dt ** 2
-        delta_z = 0.5 * az_m_s2 * dt ** 2
+        delta_x = 0.5 * ax_m_s2 * dt ** 2 + ax_prev * dt
+        delta_y = 0.5 * ay_m_s2 * dt ** 2 + ay_prev * dt
+        delta_z = 0.5 * az_m_s2 * dt ** 2 + az_prev * dt
 
         new_position = [
             last_position[0] + delta_x,
@@ -52,7 +52,7 @@ def imu_position_update(ax, ay, az, imu_positions, dt, original_position):
     return new_position
 
 if __name__ == "__main__":
-    file_path = 'data/Rec18.csv'
+    file_path = 'data/Rec21.csv'
     
     # import pdb; pdb.set_trace()
     
@@ -97,8 +97,8 @@ if __name__ == "__main__":
     
     # set original position of three IMUs to a certain 3D point
     imu1_initial_position = [0, 0, 0]
-    imu2_initial_position = [10, 10, 10]
-    imu3_initial_position = [20, 20, 20]
+    imu2_initial_position = [0.5, 0.5, 0.5]
+    imu3_initial_position = [1, 1, 1]
     imu1_positions = [imu1_initial_position]
     imu2_positions = [imu2_initial_position]
     imu3_positions = [imu3_initial_position]
@@ -153,6 +153,10 @@ if __name__ == "__main__":
         mx_list1.append(row['MagX(uT)'])
         my_list1.append(row['MagY(uT)'])
         mz_list1.append(row['MagZ(uT)'])
+        # previous time setp's data
+        ax_prev = ax_list1[-1] if len(ax_list1) > 1 else 0
+        ay_prev = ay_list1[-1] if len(ay_list1) > 1 else 0
+        az_prev = az_list1[-1] if len(az_list1) > 1 else 0
         # import pdb; pdb.set_trace()
         imu_data = filter_imu1.imu_filter(
             ax=row['AccX(mg)'], ay=row['AccY(mg)'], az=row['AccZ(mg)'],
@@ -174,7 +178,7 @@ if __name__ == "__main__":
         angles_raw_df = pd.DataFrame(angles_raw_data_imu1, columns=['Roll1', 'Pitch1', 'Yaw1'])
         compl_filter_imu1.roll, compl_filter_imu1.pitch, compl_filter_imu1.yaw = complimentary_filter(compl_filter_imu1, compl_data_imu1, roll, pitch, yaw, gx, gy, gz, DELTA_T)
         
-        imu1_position = imu_position_update(ax, ay, az, imu1_positions, DELTA_T, imu1_initial_position)
+        imu1_position = imu_position_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu1_positions, DELTA_T, imu1_initial_position)
         imu1_positions.append(imu1_position)
         # print(f"IMU 1 - Position: {imu1_positions}")
         imu1_position_df = pd.DataFrame(imu1_positions, columns=['IMU1_X', 'IMU1_Y', 'IMU1_Z'])
@@ -190,6 +194,10 @@ if __name__ == "__main__":
         mx_list2.append(row['MagX(uT).1'])
         my_list2.append(row['MagY(uT).1'])
         mz_list2.append(row['MagZ(uT).1'])
+        # previous time setp's data
+        ax_prev = ax_list2[-1] if len(ax_list2) > 1 else 0
+        ay_prev = ay_list2[-1] if len(ay_list2) > 1 else 0
+        az_prev = az_list2[-1] if len(az_list2) > 1 else 0
         
         imu_data = filter_imu2.imu_filter(
             ax=row['AccX(mg).1'], ay=row['AccY(mg).1'], az=row['AccZ(mg).1'],
@@ -212,7 +220,7 @@ if __name__ == "__main__":
         compl_filter_imu2.roll, compl_filter_imu2.pitch, compl_filter_imu2.yaw = complimentary_filter(compl_filter_imu2, compl_data_imu2, roll, pitch, yaw, gx, gy, gz, DELTA_T)
         
         # import pdb; pdb.set_trace()
-        imu2_position = imu_position_update(ax, ay, az, imu2_positions, DELTA_T, imu2_initial_position)
+        imu2_position = imu_position_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu2_positions, DELTA_T, imu2_initial_position)
         imu2_positions.append(imu2_position)
         # print(f"IMU 2 - Position: {imu2_positions}")
         imu2_position_df = pd.DataFrame(imu2_positions, columns=['IMU2_X', 'IMU2_Y', 'IMU2_Z'])
@@ -228,6 +236,11 @@ if __name__ == "__main__":
         mx_list3.append(row['MagX(uT).2'])
         my_list3.append(row['MagY(uT).2'])
         mz_list3.append(row['MagZ(uT).2'])
+        # previous time setp's data
+        ax_prev = ax_list3[-1] if len(ax_list3) > 1 else 0
+        ay_prev = ay_list3[-1] if len(ay_list3) > 1 else 0
+        az_prev = az_list3[-1] if len(az_list3) > 1 else 0
+        
         imu_data = filter_imu3.imu_filter(
             ax=row['AccX(mg).2'], ay=row['AccY(mg).2'], az=row['AccZ(mg).2'],
             gx=row['GyrX(DPS).2'], gy=row['GyrY(DPS).2'], gz=row['GyrZ(DPS).2'],
@@ -248,7 +261,7 @@ if __name__ == "__main__":
         angles_raw_df = pd.DataFrame(angles_raw_data_imu3, columns=['Roll3', 'Pitch3', 'Yaw3'])
         compl_filter_imu3.roll, compl_filter_imu3.pitch, compl_filter_imu3.yaw = complimentary_filter(compl_filter_imu3, compl_data_imu3, roll, pitch, yaw, gx, gy, gz, DELTA_T)
         
-        imu3_position = imu_position_update(ax, ay, az, imu3_positions, DELTA_T, imu3_initial_position)
+        imu3_position = imu_position_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu3_positions, DELTA_T, imu3_initial_position)
         imu3_positions.append(imu3_position)
         # print(f"IMU 3 - Position: {imu3_positions}")
         imu3_position_df = pd.DataFrame(imu3_positions, columns=['IMU3_X', 'IMU3_Y', 'IMU3_Z'])
