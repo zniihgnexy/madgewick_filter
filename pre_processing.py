@@ -30,18 +30,22 @@ def imu_position_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu_positions, dt
     # 将加速度从mg转换为m/s^2，注意1g = 9.81m/s^2
     # import pdb; pdb.set_trace()
     
-    ax_m_s2 = ax * 9.81 / 100
-    ay_m_s2 = ay * 9.81 / 100
-    az_m_s2 = az * 9.81 / 100
+    ax_m_s2 = ax * 9.81 / 1000
+    ay_m_s2 = ay * 9.81 / 1000
+    az_m_s2 = az * 9.81 / 1000
 
     if not imu_positions:
         new_position = [0, 0, 0]
     else:
         last_position = imu_positions[-1]
         
-        delta_x = 0.5 * ax_m_s2 * dt ** 2 + ax_prev * dt
-        delta_y = 0.5 * ay_m_s2 * dt ** 2 + ay_prev * dt
-        delta_z = 0.5 * az_m_s2 * dt ** 2 + az_prev * dt
+        # delta_x = 0.5 * ax_m_s2 * dt ** 2
+        # delta_y = 0.5 * ay_m_s2 * dt ** 2
+        # delta_z = 0.5 * az_m_s2 * dt ** 2
+        
+        delta_x = ax_m_s2 * dt
+        delta_y = ay_m_s2 * dt
+        delta_z = az_m_s2 * dt
 
         new_position = [
             last_position[0] + delta_x,
@@ -114,9 +118,9 @@ if __name__ == "__main__":
 
     DELTA_T = 1/100.0 # 100Hz, change to the correct one
     PI = np.pi
-    cutoff = 15
+    cutoff = 20
     fs = 100
-    order = 3
+    order = 6
     
     ax_list1, ay_list1, az_list1 = [], [], []
     gx_list1, gy_list1, gz_list1 = [], [], []
@@ -171,17 +175,17 @@ if __name__ == "__main__":
         roll, pitch, yaw = filter_imu1.eulerAngles()
         angles_raw_data_imu1.append([roll, pitch, yaw])
         # print(f"IMU 1 - Roll: {roll}, Pitch: {pitch}, Yaw: {yaw}")
-        acc_raw_df = pd.DataFrame(acc_raw_data_imu1, columns=['AccX_raw_data1', 'AccY_raw_data1', 'AccZ_raw_data1'])
-        gyro_raw_df = pd.DataFrame({'GyrX_raw_data1': gx_list1, 'GyrY_raw_data1': gy_list1, 'GyrZ_raw_data1': gz_list1})
-        mag_raw_df = pd.DataFrame({'MagX_raw_data1': mx_list1, 'MagY_raw_data1': my_list1, 'MagZ_raw_data1': mz_list1})
+        # acc_raw_df = pd.DataFrame(acc_raw_data_imu1, columns=['AccX_raw_data1', 'AccY_raw_data1', 'AccZ_raw_data1'])
+        # gyro_raw_df = pd.DataFrame({'GyrX_raw_data1': gx_list1, 'GyrY_raw_data1': gy_list1, 'GyrZ_raw_data1': gz_list1})
+        # mag_raw_df = pd.DataFrame({'MagX_raw_data1': mx_list1, 'MagY_raw_data1': my_list1, 'MagZ_raw_data1': mz_list1})
         
-        angles_raw_df = pd.DataFrame(angles_raw_data_imu1, columns=['Roll1', 'Pitch1', 'Yaw1'])
+        # angles_raw_df = pd.DataFrame(angles_raw_data_imu1, columns=['Roll1', 'Pitch1', 'Yaw1'])
         compl_filter_imu1.roll, compl_filter_imu1.pitch, compl_filter_imu1.yaw = complimentary_filter(compl_filter_imu1, compl_data_imu1, roll, pitch, yaw, gx, gy, gz, DELTA_T)
         
         imu1_position = imu_position_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu1_positions, DELTA_T, imu1_initial_position)
         imu1_positions.append(imu1_position)
         # print(f"IMU 1 - Position: {imu1_positions}")
-        imu1_position_df = pd.DataFrame(imu1_positions, columns=['IMU1_X', 'IMU1_Y', 'IMU1_Z'])
+        # imu1_position_df = pd.DataFrame(imu1_positions, columns=['IMU1_X', 'IMU1_Y', 'IMU1_Z'])
 
     print("\nIMU 2")
     for index, row in imu2.iterrows():
@@ -212,18 +216,18 @@ if __name__ == "__main__":
         roll, pitch, yaw = filter_imu2.eulerAngles()
         angles_raw_data_imu2.append([roll, pitch, yaw])
         # print(f"IMU 2 - Roll: {roll}, Pitch: {pitch}, Yaw: {yaw}")
-        acc_raw_df = pd.DataFrame(acc_raw_data_imu2, columns=['AccX_raw_data2', 'AccY_raw_data2', 'AccZ_raw_data2'])
-        gyro_raw_df = pd.DataFrame({'GyrX_raw_data2': gx_list2, 'GyrY_raw_data2': gy_list2, 'GyrZ_raw_data2': gz_list2})
-        mag_raw_df = pd.DataFrame({'MagX_raw_data2': mx_list2, 'MagY_raw_data2': my_list2, 'MagZ_raw_data2': mz_list2})
+        # acc_raw_df = pd.DataFrame(acc_raw_data_imu2, columns=['AccX_raw_data2', 'AccY_raw_data2', 'AccZ_raw_data2'])
+        # gyro_raw_df = pd.DataFrame({'GyrX_raw_data2': gx_list2, 'GyrY_raw_data2': gy_list2, 'GyrZ_raw_data2': gz_list2})
+        # mag_raw_df = pd.DataFrame({'MagX_raw_data2': mx_list2, 'MagY_raw_data2': my_list2, 'MagZ_raw_data2': mz_list2})
         
-        angles_raw_df = pd.DataFrame(angles_raw_data_imu2, columns=['Roll2', 'Pitch2', 'Yaw2'])
+        # angles_raw_df = pd.DataFrame(angles_raw_data_imu2, columns=['Roll2', 'Pitch2', 'Yaw2'])
         compl_filter_imu2.roll, compl_filter_imu2.pitch, compl_filter_imu2.yaw = complimentary_filter(compl_filter_imu2, compl_data_imu2, roll, pitch, yaw, gx, gy, gz, DELTA_T)
         
         # import pdb; pdb.set_trace()
         imu2_position = imu_position_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu2_positions, DELTA_T, imu2_initial_position)
         imu2_positions.append(imu2_position)
         # print(f"IMU 2 - Position: {imu2_positions}")
-        imu2_position_df = pd.DataFrame(imu2_positions, columns=['IMU2_X', 'IMU2_Y', 'IMU2_Z'])
+        # imu2_position_df = pd.DataFrame(imu2_positions, columns=['IMU2_X', 'IMU2_Y', 'IMU2_Z'])
 
     print("\nIMU 3")
     for index, row in imu3.iterrows():
@@ -254,17 +258,17 @@ if __name__ == "__main__":
         roll, pitch, yaw = filter_imu3.eulerAngles()
         angles_raw_data_imu3.append([roll, pitch, yaw])
         # print(f"IMU 3 - Roll: {roll}, Pitch: {pitch}, Yaw: {yaw}")
-        acc_raw_df = pd.DataFrame(acc_raw_data_imu3, columns=['AccX_raw_data3', 'AccY_raw_data3', 'AccZ_raw_data3'])
-        gyro_raw_df = pd.DataFrame({'GyrX_raw_data3': gx_list3, 'GyrY_raw_data3': gy_list3, 'GyrZ_raw_data3': gz_list3})
-        mag_raw_df = pd.DataFrame({'MagX_raw_data3': mx_list3, 'MagY_raw_data3': my_list3, 'MagZ_raw_data3': mz_list3})
+        # acc_raw_df = pd.DataFrame(acc_raw_data_imu3, columns=['AccX_raw_data3', 'AccY_raw_data3', 'AccZ_raw_data3'])
+        # gyro_raw_df = pd.DataFrame({'GyrX_raw_data3': gx_list3, 'GyrY_raw_data3': gy_list3, 'GyrZ_raw_data3': gz_list3})
+        # mag_raw_df = pd.DataFrame({'MagX_raw_data3': mx_list3, 'MagY_raw_data3': my_list3, 'MagZ_raw_data3': mz_list3})
         
-        angles_raw_df = pd.DataFrame(angles_raw_data_imu3, columns=['Roll3', 'Pitch3', 'Yaw3'])
+        # angles_raw_df = pd.DataFrame(angles_raw_data_imu3, columns=['Roll3', 'Pitch3', 'Yaw3'])
         compl_filter_imu3.roll, compl_filter_imu3.pitch, compl_filter_imu3.yaw = complimentary_filter(compl_filter_imu3, compl_data_imu3, roll, pitch, yaw, gx, gy, gz, DELTA_T)
         
         imu3_position = imu_position_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu3_positions, DELTA_T, imu3_initial_position)
         imu3_positions.append(imu3_position)
         # print(f"IMU 3 - Position: {imu3_positions}")
-        imu3_position_df = pd.DataFrame(imu3_positions, columns=['IMU3_X', 'IMU3_Y', 'IMU3_Z'])
+        # imu3_position_df = pd.DataFrame(imu3_positions, columns=['IMU3_X', 'IMU3_Y', 'IMU3_Z'])
     
     
     ###########################################################################################
