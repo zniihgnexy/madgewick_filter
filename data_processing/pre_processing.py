@@ -391,9 +391,13 @@ if __name__ == "__main__":
     Angle_final_df.to_csv('../angles_data/angle_state_imu_angle_data.csv', index=False)
     # compl_final_df.to_csv('compl_imu_Compl_angle_data.csv', index=False)
     
-    Train_imu1_final_df.to_csv('../train_data/imu1_train_data.csv', index=False)
-    Train_imu2_final_df.to_csv('../train_data/imu2_train_data.csv', index=False)
-    Train_imu3_final_df.to_csv('../train_data/imu3_train_data.csv', index=False)
+    # Train_imu1_final_df.to_csv('../train_data_ori/imu1_train_data.csv', index=False)
+    # Train_imu2_final_df.to_csv('../train_data_ori/imu2_train_data.csv', index=False)
+    # Train_imu3_final_df.to_csv('../train_data_ori/imu3_train_data.csv', index=False)
+    
+    train_imu1.to_csv('../train_data_ori/imu1_train_data.csv', index=False)
+    train_imu2.to_csv('../train_data_ori/imu2_train_data.csv', index=False)
+    train_imu3.to_csv('../train_data_ori/imu3_train_data.csv', index=False)
     ###########################################################################################
     # butter worth filter part
     all_data_filter(ax_list1, ay_list1, az_list1, ax_list2, ay_list2, az_list2, ax_list3, ay_list3, az_list3, cutoff, fs, order, name='acc')

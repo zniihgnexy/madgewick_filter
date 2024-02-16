@@ -1,28 +1,29 @@
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-filename = "punch.csv"
+filename = "imu1_train_data.csv"
 
-df = pd.read_csv("/content/gesture_data/" + filename)
+df = pd.read_csv("../train_data_ori/" + filename)
 
-index = range(1, len(df['aX']) + 1)
+index = range(1, len(df['IMU1_AccX']) + 1)
 
 plt.rcParams["figure.figsize"] = (20,10)
 
-plt.plot(index, df['aX'], 'g.', label='x', linestyle='solid', marker=',')
-plt.plot(index, df['aY'], 'b.', label='y', linestyle='solid', marker=',')
-plt.plot(index, df['aZ'], 'r.', label='z', linestyle='solid', marker=',')
+plt.plot(index, df['IMU1_AccX'], 'g.', label='x', linestyle='solid', marker=',')
+plt.plot(index, df['IMU1_AccY'], 'b.', label='y', linestyle='solid', marker=',')
+plt.plot(index, df['IMU1_AccZ'], 'r.', label='z', linestyle='solid', marker=',')
 plt.title("Acceleration")
 plt.xlabel("Sample #")
 plt.ylabel("Acceleration (G)")
 plt.legend()
 plt.show()
 
-plt.plot(index, df['gX'], 'g.', label='x', linestyle='solid', marker=',')
-plt.plot(index, df['gY'], 'b.', label='y', linestyle='solid', marker=',')
-plt.plot(index, df['gZ'], 'r.', label='z', linestyle='solid', marker=',')
+plt.plot(index, df['IMU1_GyrX'], 'g.', label='x', linestyle='solid', marker=',')
+plt.plot(index, df['IMU1_GyrY'], 'b.', label='y', linestyle='solid', marker=',')
+plt.plot(index, df['IMU1_GyrZ'], 'r.', label='z', linestyle='solid', marker=',')
 plt.title("Gyroscope")
 plt.xlabel("Sample #")
 plt.ylabel("Gyroscope (deg/sec)")
@@ -40,14 +41,13 @@ SEED = 1337
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
-# the list of gestures that data is available for
-GESTURES = [
-    "punch",
-    "flex",
-]
+directory = "../train_data/random/"
+files = os.listdir(directory)
 
-SAMPLES_PER_GESTURE = 119
+print(f"Processing {len(files)} files.")
 
+SAMPLES_PER_GESTURE = 200
+GESTURES = ["random"]
 NUM_GESTURES = len(GESTURES)
 
 # create a one-hot encoded matrix that is used in the output
@@ -56,40 +56,37 @@ ONE_HOT_ENCODED_GESTURES = np.eye(NUM_GESTURES)
 inputs = []
 outputs = []
 
-# read each csv file and push an input and output
-for gesture_index in range(NUM_GESTURES):
-    gesture = GESTURES[gesture_index]
-    print(f"Processing index {gesture_index} for gesture '{gesture}'.")
+for gesture_index, gesture in enumerate(GESTURES):
+    print(f"Processing gesture '{gesture}'.")
     
     output = ONE_HOT_ENCODED_GESTURES[gesture_index]
     
-    df = pd.read_csv("/content/gesture_data/" + gesture + ".csv")
+    gesture_files = [file for file in files if gesture in file]
+    print("\t", len(gesture_files), "files found.")
     
-    # calculate the number of gesture recordings in the file
-    num_recordings = int(df.shape[0] / SAMPLES_PER_GESTURE)
-    
-    print(f"\tThere are {num_recordings} recordings of the {gesture} gesture.")
-    
-    for i in range(num_recordings):
-        tensor = []
-        for j in range(SAMPLES_PER_GESTURE):
-            index = i * SAMPLES_PER_GESTURE + j
-            # normalize the input data, between 0 to 1:
-            # - acceleration is between: -4 to +4
-            # - gyroscope is between: -2000 to +2000
-            tensor += [
-                (df['aX'][index] + 4) / 8,
-                (df['aY'][index] + 4) / 8,
-                (df['aZ'][index] + 4) / 8,
-                (df['gX'][index] + 2000) / 4000,
-                (df['gY'][index] + 2000) / 4000,
-                (df['gZ'][index] + 2000) / 4000
-            ]
+    for file in gesture_files:
+        file_path = os.path.join(directory, file)
+        df = pd.read_csv(file_path)
+        
+        num_recordings = int(df.shape[0] / SAMPLES_PER_GESTURE)
+        print(f"\tFile {file} has {num_recordings} recordings of the {gesture} gesture.")
+        
+        for i in range(num_recordings):
+            tensor = []
+            for j in range(SAMPLES_PER_GESTURE):
+                index = i * SAMPLES_PER_GESTURE + j
+                tensor += [
+                    (df['IMU1_AccX'].iloc[index] + 4) / 8,
+                    (df['IMU1_AccY'].iloc[index] + 4) / 8,
+                    (df['IMU1_AccZ'].iloc[index] + 4) / 8,
+                    (df['IMU1_GyrX'].iloc[index] + 2000) / 4000,
+                    (df['IMU1_GyrY'].iloc[index] + 2000) / 4000,
+                    (df['IMU1_GyrZ'].iloc[index] + 2000) / 4000
+                ]
 
-        inputs.append(tensor)
-        outputs.append(output)
+            inputs.append(tensor)
+            outputs.append(output)
 
-# convert the list to numpy array
 inputs = np.array(inputs)
 outputs = np.array(outputs)
 
