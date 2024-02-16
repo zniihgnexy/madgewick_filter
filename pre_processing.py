@@ -89,9 +89,9 @@ def speed_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu_speeds, dt, original
     else:
         last_speed = imu_speeds[-1]
         
-        delta_x = 0.5 * (ax_m_s2 + ax_prev * 9.81 / 1000) * dt
-        delta_y = 0.5 * (ay_m_s2 + ay_prev * 9.81 / 1000) * dt
-        delta_z = 0.5 * (az_m_s2 + az_prev * 9.81 / 1000) * dt
+        delta_x = 0.5 * (ax_m_s2 + ax_prev * 9.81 / 1000) * dt ** 2
+        delta_y = 0.5 * (ay_m_s2 + ay_prev * 9.81 / 1000) * dt ** 2
+        delta_z = 0.5 * (az_m_s2 + az_prev * 9.81 / 1000) * dt ** 2
 
         new_speed = [
             last_speed[0] + delta_x,
