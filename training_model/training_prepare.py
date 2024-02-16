@@ -109,11 +109,12 @@ outputs_train, outputs_test, outputs_validate = np.split(outputs, [TRAIN_SPLIT, 
 print("Data set randomization and splitting complete.")
 
 # build the model and train it
+# input shape 是每个文件完全展平之后的数据的总长度
 model = create_model(input_shape=(120,), num_classes=5)
 
 model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
 
-history = model.fit(inputs_train, outputs_train, epochs=100, batch_size=16, validation_data=(inputs_validate, outputs_validate))
+history = model.fit(inputs_train, outputs_train, epochs=1000, batch_size=16, validation_data=(inputs_validate, outputs_validate))
 
 # increase the size of the graphs. The default size is (6,4).
 plt.rcParams["figure.figsize"] = (20,10)
