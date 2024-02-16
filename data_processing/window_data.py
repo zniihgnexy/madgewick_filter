@@ -13,7 +13,7 @@ def split_csv_file(filename,path_ori, path, rows_per_file, label, column_names):
         end_row = start_row + rows_per_file
         df_subset = df.iloc[start_row:end_row]
         
-        new_filename = f"{path}/{label}/{filename[:-4]}_part{i+1}.csv"
+        new_filename = f"{path}/{label}/{label}_{filename[:-4]}_part{i+1}.csv"
         
         df_subset.to_csv(new_filename, index=False)
         
@@ -23,7 +23,7 @@ def split_csv_file(filename,path_ori, path, rows_per_file, label, column_names):
 directory_ori = "../train_data_ori/"
 directory = "../train_data/"
 filename = "imu1_train_data.csv"
-rows_per_file = 200
+rows_per_file = 20
 label = "random"
 column_names = ['IMU1_AccX', 'IMU1_AccY', 'IMU1_AccZ', 'IMU1_GyrX', 'IMU1_GyrY', 'IMU1_GyrZ']
 split_csv_file(filename, directory_ori, directory, rows_per_file, label, column_names)
