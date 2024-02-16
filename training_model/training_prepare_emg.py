@@ -18,11 +18,11 @@ from keras.models import Sequential
 from keras.layers import Dropout
 from model import create_imu_model, build_imu_model
 
-filename = "imu1_train_data.csv"
+filename = "emg_train_data1.csv"
 
 df = pd.read_csv("../train_data_ori/" + filename)
 
-index = range(1, len(df['IMU1_AccX']) + 1)
+index = range(1, len(df['CH1']) + 1)
 
 # plt.rcParams["figure.figsize"] = (20,10)
 
@@ -55,8 +55,8 @@ SEED = 42069
 np.random.seed(SEED)
 tf.random.set_seed(SEED)
 
-directory = "../train_data/random/"
-# directory = "../train_data/emg/random/"
+# directory = "../train_data/random/"
+directory = "../train_data/emg/random/"
 files = os.listdir(directory)
 
 SAMPLES_PER_GESTURE = 1
@@ -79,7 +79,7 @@ for gesture_index, gesture in enumerate(GESTURES):
     for file in gesture_files:
         df = pd.read_csv(directory + file)
         
-        normalized_df = df.apply(lambda x: (x + 4) / 8 if 'Acc' in x.name else (x + 2000) / 4000)
+        normalized_df = df.apply(lambda x: (x + 4) / 8 if 'CH' in x.name else (x + 2000) / 4000)
         flattened_data = normalized_df.values.flatten()
         
         inputs.append(flattened_data)
@@ -111,7 +111,7 @@ print("Data set randomization and splitting complete.")
 
 # build the model and train it
 # input shape 是每个文件完全展平之后的数据的总长度
-model = create_imu_model(input_shape=(120,), num_classes=5)
+model = create_imu_model(input_shape=(1200,), num_classes=5)
 
 model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
 
