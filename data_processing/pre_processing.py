@@ -48,9 +48,9 @@ def all_data_filter(x_1, y_1, z_1, x_2, y_2, z_2, x_3, y_3, z_3, cutoff, fs, ord
     y_3 = return_array_filter(y_3, cutoff, fs, order)
     z_3 = return_array_filter(z_3, cutoff, fs, order)
     
-    combine3_save_to_csv(timestamps, x_1, y_1, z_1, 'butterworth_filtered/' + name + '_imu1.csv')
-    combine3_save_to_csv(timestamps, x_2, y_2, z_2, 'butterworth_filtered/' + name + '_imu2.csv')
-    combine3_save_to_csv(timestamps, x_3, y_3, z_3, 'butterworth_filtered/' + name + '_imu3.csv')
+    combine3_save_to_csv(timestamps, x_1, y_1, z_1, '../butterworth_filtered/' + name + '_imu1.csv')
+    combine3_save_to_csv(timestamps, x_2, y_2, z_2, '../butterworth_filtered/' + name + '_imu2.csv')
+    combine3_save_to_csv(timestamps, x_3, y_3, z_3, '../butterworth_filtered/' + name + '_imu3.csv')
     
     return x_1, y_1, z_1, x_2, y_2, z_2, x_3, y_3, z_3
     
@@ -102,7 +102,7 @@ def speed_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu_speeds, dt, original
     return new_speed
 
 if __name__ == "__main__":
-    file_path = 'data/Rec21.csv'
+    file_path = '../data/Rec28.csv'
     
     # import pdb; pdb.set_trace()
     
@@ -178,6 +178,7 @@ if __name__ == "__main__":
     mag_raw_data_imu1 = []
     angles_data_imu1 = []
     compl_data_imu1 = []
+    imu1_train_data = []
     
     ax_list2, ay_list2, az_list2 = [], [], []
     gx_list2, gy_list2, gz_list2 = [], [], []
@@ -189,6 +190,7 @@ if __name__ == "__main__":
     mag_raw_data_imu2 = []
     angles_data_imu2 = []
     compl_data_imu2 = []
+    imu2_train_data = []
     
     ax_list3, ay_list3, az_list3 = [], [], []
     gx_list3, gy_list3, gz_list3 = [], [], []
@@ -200,6 +202,7 @@ if __name__ == "__main__":
     mag_raw_data_imu3 = []
     angles_data_imu3 = []
     compl_data_imu3 = []
+    imu3_train_data = []
 
     print("\nIMU 1")
     for index, row in imu1.iterrows():
@@ -226,7 +229,6 @@ if __name__ == "__main__":
         speedy_list1.append(speed_update(row['AccY(mg)'], row['AccX(mg)'], row['AccZ(mg)'], ay_list1[-1], ax_list1[-1], az_list1[-1], imu1_positions, DELTA_T, imu1_initial_position))
         speedz_list1.append(speed_update(row['AccZ(mg)'], row['AccY(mg)'], row['AccX(mg)'], az_list1[-1], ay_list1[-1], ax_list1[-1], imu1_positions, DELTA_T, imu1_initial_position))
         
-        
         # import pdb; pdb.set_trace()
         imu_data = filter_imu1.imu_filter(
             ax=row['AccX(mg)'], ay=row['AccY(mg)'], az=row['AccZ(mg)'],
@@ -249,6 +251,9 @@ if __name__ == "__main__":
         imu1_position = imu_position_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu1_positions, DELTA_T, imu1_initial_position)
         imu1_positions.append(imu1_position)
         # print(f"IMU 1 - Position: {imu1_positions}")
+        
+        # put acc and gyr data into a list
+        imu1_train_data.append([ax, ay, az, gx, gy, gz])
 
     print("\nIMU 2")
     for index, row in imu2.iterrows():
@@ -297,6 +302,8 @@ if __name__ == "__main__":
         imu2_position = imu_position_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu2_positions, DELTA_T, imu2_initial_position)
         imu2_positions.append(imu2_position)
         # print(f"IMU 2 - Position: {imu2_positions}")
+        
+        imu2_train_data.append([ax, ay, az, gx, gy, gz])
 
     print("\nIMU 3")
     for index, row in imu3.iterrows():
@@ -338,12 +345,14 @@ if __name__ == "__main__":
         roll, pitch, yaw = filter_imu3.eulerAngles()
         angles_data_imu3.append([roll, pitch, yaw])
         # print(f"IMU 3 - Roll: {roll}, Pitch: {pitch}, Yaw: {yaw}")
-
+        
         compl_filter_imu3.roll, compl_filter_imu3.pitch, compl_filter_imu3.yaw = complimentary_filter(compl_filter_imu3, compl_data_imu3, roll, pitch, yaw, gx, gy, gz, DELTA_T)
         
         imu3_position = imu_position_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu3_positions, DELTA_T, imu3_initial_position)
         imu3_positions.append(imu3_position)
         # print(f"IMU 3 - Position: {imu3_positions}")
+        
+        imu3_train_data.append([ax, ay, az, gx, gy, gz])
     
     
     ###########################################################################################
@@ -364,15 +373,27 @@ if __name__ == "__main__":
     # compl_imu2 = pd.DataFrame(compl_data_imu2, columns=['Roll2', 'Pitch2', 'Yaw2'])
     # compl_imu3 = pd.DataFrame(compl_data_imu3, columns=['Roll3', 'Pitch3', 'Yaw3'])
     
+    # data for train
+    train_imu1 = pd.DataFrame(imu1_train_data, columns=['IMU1_AccX', 'IMU1_AccY', 'IMU1_AccZ', 'IMU1_GyrX', 'IMU1_GyrY', 'IMU1_GyrZ'])
+    train_imu2 = pd.DataFrame(imu2_train_data, columns=['IMU2_AccX', 'IMU2_AccY', 'IMU2_AccZ', 'IMU2_GyrX', 'IMU2_GyrY', 'IMU2_GyrZ'])
+    train_imu3 = pd.DataFrame(imu3_train_data, columns=['IMU3_AccX', 'IMU3_AccY', 'IMU3_AccZ', 'IMU3_GyrX', 'IMU3_GyrY', 'IMU3_GyrZ'])
+    
     # 将三个DataFrame按列合并
     Acc_final_df = pd.concat([timestamps, df_imu1, df_imu2, df_imu3], axis=1)
     Angle_final_df = pd.concat([timestamps, angle_imu1, angle_imu2, angle_imu3], axis=1)
     # compl_final_df = pd.concat([timestamps, compl_imu1, compl_imu2, compl_imu3], axis=1)
+    Train_imu1_final_df = pd.concat([timestamps, train_imu1], axis=1)
+    Train_imu2_final_df = pd.concat([timestamps, train_imu2], axis=1)
+    Train_imu3_final_df = pd.concat([timestamps, train_imu3], axis=1)
     
     # save to csv file
-    Acc_final_df.to_csv('raw_data/imu_Acc_data.csv', index=False)
-    Angle_final_df.to_csv('angles_data/angle_state_imu_angle_data.csv', index=False)
+    Acc_final_df.to_csv('../raw_data/imu_Acc_data.csv', index=False)
+    Angle_final_df.to_csv('../angles_data/angle_state_imu_angle_data.csv', index=False)
     # compl_final_df.to_csv('compl_imu_Compl_angle_data.csv', index=False)
+    
+    Train_imu1_final_df.to_csv('../train_data/imu1_train_data.csv', index=False)
+    Train_imu2_final_df.to_csv('../train_data/imu2_train_data.csv', index=False)
+    Train_imu3_final_df.to_csv('../train_data/imu3_train_data.csv', index=False)
     ###########################################################################################
     # butter worth filter part
     all_data_filter(ax_list1, ay_list1, az_list1, ax_list2, ay_list2, az_list2, ax_list3, ay_list3, az_list3, cutoff, fs, order, name='acc')
@@ -380,6 +401,8 @@ if __name__ == "__main__":
     all_data_filter(mx_list1, my_list1, mz_list1, mx_list2, my_list2, mz_list2, mx_list3, my_list3, mz_list3, cutoff, fs, order, name='mag')
     ################################################################################################
     # position update
-    save_to_csv(timestamps, imu1_positions, 'position/IMU1_position.csv', columns=['IMU1_X', 'IMU1_Y', 'IMU1_Z'])
-    save_to_csv(timestamps, imu2_positions, 'position/IMU2_position.csv', columns=['IMU2_X', 'IMU2_Y', 'IMU2_Z'])
-    save_to_csv(timestamps, imu3_positions, 'position/IMU3_position.csv', columns=['IMU3_X', 'IMU3_Y', 'IMU3_Z'])
+    save_to_csv(timestamps, imu1_positions, '../position/IMU1_position.csv', columns=['IMU1_X', 'IMU1_Y', 'IMU1_Z'])
+    save_to_csv(timestamps, imu2_positions, '../position/IMU2_position.csv', columns=['IMU2_X', 'IMU2_Y', 'IMU2_Z'])
+    save_to_csv(timestamps, imu3_positions, '../position/IMU3_position.csv', columns=['IMU3_X', 'IMU3_Y', 'IMU3_Z'])
+
+    
