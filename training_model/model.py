@@ -59,3 +59,17 @@ def build_imu_model(X_train, y_train, batch_size=64, epochs=100):
     plt.legend()
 
     plt.show()
+
+def imu_graph_model(num_classes, img_width, img_height):
+    model = Sequential([
+        Conv2D(32, (3, 3), activation='relu', input_shape=(img_width, img_height, 3)),
+        MaxPooling2D(2, 2),
+        Conv2D(64, (3, 3), activation='relu'),
+        MaxPooling2D(2, 2),
+        Flatten(),
+        Dense(64, activation='relu'),
+        Dropout(0.5),
+        Dense(1, activation='sigmoid')
+    ])
+    
+    return model
