@@ -54,7 +54,7 @@ model = Sequential([
 # model = imu_graph_model(1, img_width, img_height)
 
 model.compile(optimizer='rmsprop',
-                loss='binary_crossentropy',
+                loss='categorical_crossentropy',
                 metrics=['acc'])
 
 checkpoint = ModelCheckpoint('./checkpoint/model_weights.h5', save_best_only=True, monitor='val_loss', mode='min')
@@ -77,7 +77,7 @@ print(history.history.keys())
 plt.figure(figsize=(12, 5))
 plt.subplot(1, 2, 1)
 plt.plot(history.history['acc'], label='Train Accuracy')
-# plt.plot(history.history['val_acc'], label='Validation Accuracy')
+plt.plot(history.history['val_acc'], label='Validation Accuracy')
 plt.title('Accuracy over epochs')
 plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
@@ -86,7 +86,7 @@ plt.legend()
 # 绘制训练和验证的损失值变化
 plt.subplot(1, 2, 2)
 plt.plot(history.history['loss'], label='Train Loss')
-# plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
 plt.title('Loss over epochs')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
