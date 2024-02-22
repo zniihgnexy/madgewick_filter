@@ -28,6 +28,8 @@ def process_and_save_image(file_name, output_folder):
             df[col] = normalize_imu(df[col], max_acc, min_acc)
         elif "Gyr" in col:
             df[col] = normalize_imu(df[col], max_gyr, min_gyr)
+        elif "Mag" in col:
+            df[col] = normalize_imu(df[col], 1, -1)
 
     data_normalized = df.to_numpy()
 
@@ -50,8 +52,8 @@ data_labels = []
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
-for i in range(1, 101):
-    file_name = f"random_imu1_train_data_part{i}.csv"
+for i in range(1, 158):
+    file_name = f"random_imu_train_data_part{i}.csv"
     full_path = os.path.join(input_folder, file_name)
     process_and_save_image(full_path, output_folder)
 

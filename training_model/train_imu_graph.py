@@ -14,8 +14,8 @@ df_labels = pd.read_csv(labels_csv_path)
 data_dir = 'E:/master-2/madgewick_filter/train_data/normalized_images/'
 
 img_width, img_height = 256, 256
-epochs = 10
-batch_size = 16
+epochs = 100
+batch_size = 256
 
 train_df, validate_df = train_test_split(df_labels, test_size=0.3, random_state=42, shuffle=True)
 
@@ -45,6 +45,8 @@ model = Sequential([
     MaxPooling2D(2, 2),
     Conv2D(64, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPooling2D(2, 2),
     Flatten(),
     Dense(64, activation='relu'),
     Dropout(0.5),
@@ -57,7 +59,7 @@ model.compile(optimizer='rmsprop',
                 loss='categorical_crossentropy',
                 metrics=['acc'])
 
-checkpoint = ModelCheckpoint('./checkpoint/model_weights.h5', save_best_only=True, monitor='val_loss', mode='min')
+# checkpoint = ModelCheckpoint('./checkpoint/model_weights.h5', save_best_only=True, monitor='val_loss', mode='min')
 model_structure_file = 'model_structure.json'
 
 model_json = model.to_json()
@@ -68,8 +70,8 @@ with open(model_structure_file, "w") as json_file:
 
 history = model.fit(train_generator,
             epochs=epochs,
-            validation_data=validation_generator,
-            callbacks=[checkpoint])
+            validation_data=validation_generator)
+            # callbacks=[checkpoint])
 print(history.history.keys())
 
 # 注意：模型权重已保存在'model_weights.h5'，模型结构保存在'model_structure.json'
@@ -84,13 +86,13 @@ plt.ylabel('Accuracy')
 plt.legend()
 
 # 绘制训练和验证的损失值变化
-plt.subplot(1, 2, 2)
-plt.plot(history.history['loss'], label='Train Loss')
-plt.plot(history.history['val_loss'], label='Validation Loss')
-plt.title('Loss over epochs')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.legend()
+# plt.subplot(1, 2, 2)
+# plt.plot(history.history['loss'], label='Train Loss')
+# plt.plot(history.history['val_loss'], label='Validation Loss')
+# plt.title('Loss over epochs')
+# plt.xlabel('Epoch')
+# plt.ylabel('Loss')
+# plt.legend()
 
-plt.tight_layout()
+# plt.tight_layout()
 plt.show()
