@@ -382,6 +382,9 @@ if __name__ == "__main__":
     Train_imu3_final_df = pd.concat([timestamps, train_imu3], axis=1)
     Train_imu_final_df = pd.concat([train_imu1, train_imu2, train_imu3], axis=1)
     
+    # sample one line of data every 50 lines
+    Train_imu_final_df_sampled = Train_imu_final_df.iloc[::5, :]
+    
     # save to csv file
     # Acc_final_df.to_csv('../raw_data/imu_Acc_data.csv', index=False)
     # Angle_final_df.to_csv('../angles_data/angle_state_imu_angle_data.csv', index=False)
@@ -395,12 +398,14 @@ if __name__ == "__main__":
     # train_imu2.to_csv('../train_data_ori/imu2_train_data.csv', index=False)
     # train_imu3.to_csv('../train_data_ori/imu3_train_data.csv', index=False)
     Train_imu_final_df.to_csv('../train_data_ori/imu_train_data.csv', index=False)
+    Train_imu_final_df_sampled.to_csv('../train_data_ori/imu_train_data_sampled.csv', index=False)
+
     ###########################################################################################
     # butter worth filter part
-    train_imu1 = pd.DataFrame(all_data_filter(ax_list1, ay_list1, az_list1, ax_list2, ay_list2, az_list2, ax_list3, ay_list3, az_list3, cutoff, fs, order, name='acc'))
-    train_imu2 = pd.DataFrame(all_data_filter(gx_list1, gy_list1, gz_list1, gx_list2, gy_list2, gz_list2, gx_list3, gy_list3, gz_list3, cutoff, fs, order, name='gyr'))
-    train_imu3 = pd.DataFrame(all_data_filter(mx_list1, my_list1, mz_list1, mx_list2, my_list2, mz_list2, mx_list3, my_list3, mz_list3, cutoff, fs, order, name='mag'))
-    train_imu = pd.concat([train_imu1, train_imu2, train_imu3], axis=1)
+    # train_imu1 = pd.DataFrame(all_data_filter(ax_list1, ay_list1, az_list1, ax_list2, ay_list2, az_list2, ax_list3, ay_list3, az_list3, cutoff, fs, order, name='acc'))
+    # train_imu2 = pd.DataFrame(all_data_filter(gx_list1, gy_list1, gz_list1, gx_list2, gy_list2, gz_list2, gx_list3, gy_list3, gz_list3, cutoff, fs, order, name='gyr'))
+    # train_imu3 = pd.DataFrame(all_data_filter(mx_list1, my_list1, mz_list1, mx_list2, my_list2, mz_list2, mx_list3, my_list3, mz_list3, cutoff, fs, order, name='mag'))
+    # train_imu = pd.concat([train_imu1, train_imu2, train_imu3], axis=1)
     # train_imu = pd.DataFrame(train_imu, columns=['timestamps', 'IMU1_AccX', 'IMU1_AccY', 'IMU1_AccZ',
     #                                             'IMU2_AccX', 'IMU2_AccY', 'IMU2_AccZ',
     #                                             'IMU3_AccX', 'IMU3_AccY', 'IMU3_AccZ',
