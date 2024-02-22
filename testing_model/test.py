@@ -12,10 +12,9 @@ model = model_from_json(model_json)
 model_weights_file = '../training_model/checkpoint/model_weights.h5'
 model.load_weights(model_weights_file)
 
-# 编译模型 - 确保这里使用与训练时相同的参数
-model.compile(optimizer='rmsprop',  # 使用与训练时相同的优化器
-                loss='categorical_crossentropy',  # 使用与训练时相同的损失函数
-                metrics=['accuracy'])  # 确保评估指标与训练时一致
+model.compile(optimizer='rmsprop',
+                loss='categorical_crossentropy',
+                metrics=['accuracy'])
 
 test_data_dir = 'E:/master-2/madgewick_filter/test_data/imu/'
 img_width, img_height = 256, 256
