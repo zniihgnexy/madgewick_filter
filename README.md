@@ -66,3 +66,11 @@ directory: the data of certain lable, folder name is the label name
 ### *model.py*
 
 change the model here
+
+imu_pre_processing.py
+
+to train_data_ori, mpled and original two files
+
+window_data_imu.py   rows_per_file, needs change
+
+graph_imu.py   range needs change

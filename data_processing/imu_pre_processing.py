@@ -102,7 +102,7 @@ def speed_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu_speeds, dt, original
     return new_speed
 
 if __name__ == "__main__":
-    file_path = '../data/Rec3.csv'
+    file_path = '../data/Rec2.csv'
     
     # import pdb; pdb.set_trace()
     
