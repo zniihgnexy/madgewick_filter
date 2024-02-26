@@ -8,8 +8,12 @@ import os
 # from scipy import signal
 # from global_parameters import get_imu_max_min
 
-def normalize_imu(data, max_val, min_val):
-    return (data - data.min()) / (data.max() - data.min())
+def normalize_imu1(data, max_val, min_val):
+    return (data - data.min()) / 2000
+
+def normalize_column(column, min_val, max_val):
+    """Normalize a single column of data to range between min_val and max_val."""
+    return (column - min_val) / (max_val - min_val)
 
 def get_imu_max_min(prefix, df):
     cols = [col for col in df.columns if col.startswith(prefix)]
@@ -17,24 +21,25 @@ def get_imu_max_min(prefix, df):
     min_vals = df[cols].min().min()
     return max_vals, min_vals
 
-def process_and_save_image(file_name, output_folder, normal_path):
+def process_and_save_image(file_name, output_folder):
     df = pd.read_csv(file_name)
-    df_normalization = pd.read_csv(normal_path)
-    max_acc, min_acc = get_imu_max_min("Acc", df_normalization)
-    max_gyr, min_gyr = get_imu_max_min("Gyr", df_normalization)
+    # df_normalization = pd.read_csv(normal_path)
+    max_acc, min_acc = get_imu_max_min("Acc", df)
+    max_gyr, min_gyr = get_imu_max_min("Gyr", df)
+    # print(max_acc, min_acc, max_gyr, min_gyr)
     
     # max_acc = 1000
     # min_acc = -1000
     # max_gyr = 1000
     # min_gyr = -1000
     
-    for col in df_normalization.columns:
+    for col in df.columns:
         if "Acc" in col:
-            df[col] = normalize_imu(df[col], max_acc, min_acc)
+            df[col] = normalize_column(df[col], -1, 1)
         elif "Gyr" in col:
-            df[col] = normalize_imu(df[col], max_gyr, min_gyr)
+            df[col] = normalize_imu1(df[col], -1000, 1000)
         elif "Mag" in col:
-            df[col] = normalize_imu(df[col], 1, -1)
+            df[col] = normalize_column(df[col], 1, -1)
 
     data_normalized = df.to_numpy()
 
@@ -49,20 +54,20 @@ def process_and_save_image(file_name, output_folder, normal_path):
     plt.savefig(os.path.join(output_folder, os.path.basename(file_name).replace(".csv", ".png")))
     plt.close()
     
-input_folder = "../train_data/seat_over/"
-output_folder = "../train_data/normalized_images/seat_over/"
+input_folder = "../train_data/baseline/"
+output_folder = "../train_data/normalized_images/baseline/"
 root_dir = "../train_data/normalized_images/"
-ori_file = "../train_data_ori/imu_train_data_seat_over_sampled.csv"
-data_labels = ["seat_over"]
+# ori_file = "../train_data_ori/imu_train_data_baseline_sampled.csv"
+data_labels = ["baseline"]
 
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
 for i in range(1, 158):
-    file_name = f"seat_over_imu_train_data_part{i}.csv"
+    file_name = f"baseline_imu_train_data_part{i}.csv"
     full_path = os.path.join(input_folder, file_name)
-    normal_path = os.path.join(ori_file)
-    process_and_save_image(full_path, output_folder, normal_path)
+    # normal_path = os.path.join(ori_file)
+    process_and_save_image(full_path, output_folder)
 
 output_csv_path = "../train_data/normalized_images/labels.csv"
 df_labels = pd.DataFrame(columns=['filename', 'label'])
