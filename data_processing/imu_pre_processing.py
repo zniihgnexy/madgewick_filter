@@ -101,8 +101,29 @@ def speed_update(ax, ay, az, ax_prev, ay_prev, az_prev, imu_speeds, dt, original
 
     return new_speed
 
+def get_imu_max_min(prefix, df):
+    cols = [col for col in df.columns if col.startswith(prefix)]
+    max_vals = df[cols].max().max()
+    min_vals = df[cols].min().min()
+    return max_vals, min_vals
+
+def return_acc_max_min(df):
+    max_acc = df[['IMU1_AccX', 'IMU1_AccY', 'IMU1_AccZ', 'IMU2_AccX', 'IMU2_AccY', 'IMU2_AccZ', 'IMU3_AccX', 'IMU3_AccY', 'IMU3_AccZ']].max().max()
+    min_acc = df[['IMU1_AccX', 'IMU1_AccY', 'IMU1_AccZ', 'IMU2_AccX', 'IMU2_AccY', 'IMU2_AccZ', 'IMU3_AccX', 'IMU3_AccY', 'IMU3_AccZ']].min().min()
+    return max_acc, min_acc
+
+def return_gyr_max_min(df):
+    max_gyr = df[['IMU1_GyrX', 'IMU1_GyrY', 'IMU1_GyrZ', 'IMU2_GyrX', 'IMU2_GyrY', 'IMU2_GyrZ', 'IMU3_GyrX', 'IMU3_GyrY', 'IMU3_GyrZ']].max().max()
+    min_gyr = df[['IMU1_GyrX', 'IMU1_GyrY', 'IMU1_GyrZ', 'IMU2_GyrX', 'IMU2_GyrY', 'IMU2_GyrZ', 'IMU3_GyrX', 'IMU3_GyrY', 'IMU3_GyrZ']].min().min()
+    return max_gyr, min_gyr
+
+def return_mag_max_min(df):
+    max_mag = df[['IMU1_MagX', 'IMU1_MagY', 'IMU1_MagZ', 'IMU2_MagX', 'IMU2_MagY', 'IMU2_MagZ', 'IMU3_MagX', 'IMU3_MagY', 'IMU3_MagZ']].max().max()
+    min_mag = df[['IMU1_MagX', 'IMU1_MagY', 'IMU1_MagZ', 'IMU2_MagX', 'IMU2_MagY', 'IMU2_MagZ', 'IMU3_MagX', 'IMU3_MagY', 'IMU3_MagZ']].min().min()
+    return max_mag, min_mag
+
 if __name__ == "__main__":
-    file_path = '../data/Rec2.csv'
+    file_path = '../data/Rec7.csv'
     
     # import pdb; pdb.set_trace()
     
@@ -382,8 +403,8 @@ if __name__ == "__main__":
     Train_imu3_final_df = pd.concat([timestamps, train_imu3], axis=1)
     Train_imu_final_df = pd.concat([train_imu1, train_imu2, train_imu3], axis=1)
     
-    # sample one line of data every 50 lines
-    Train_imu_final_df_sampled = Train_imu_final_df.iloc[::5, :]
+    # sample one line of data every n lines
+    Train_imu_final_df_sampled = Train_imu_final_df.iloc[::2, :]
     
     # save to csv file
     # Acc_final_df.to_csv('../raw_data/imu_Acc_data.csv', index=False)
@@ -397,8 +418,9 @@ if __name__ == "__main__":
     # train_imu1.to_csv('../train_data_ori/imu1_train_data.csv', index=False)
     # train_imu2.to_csv('../train_data_ori/imu2_train_data.csv', index=False)
     # train_imu3.to_csv('../train_data_ori/imu3_train_data.csv', index=False)
-    Train_imu_final_df.to_csv('../train_data_ori/imu_train_data.csv', index=False)
-    Train_imu_final_df_sampled.to_csv('../train_data_ori/imu_train_data_sampled.csv', index=False)
+    
+    Train_imu_final_df.to_csv('../train_data_ori/imu_train_data_seat_over.csv', index=False)
+    Train_imu_final_df_sampled.to_csv('../train_data_ori/imu_train_data_seat_over_sampled.csv', index=False)
 
     ###########################################################################################
     # butter worth filter part
@@ -419,8 +441,30 @@ if __name__ == "__main__":
     # train_imu.to_csv('../butterworth_filtered/imu_train_data.csv', index=False)
     ################################################################################################
     # position update
-    save_to_csv(timestamps, imu1_positions, '../position/IMU1_position.csv', columns=['IMU1_X', 'IMU1_Y', 'IMU1_Z'])
-    save_to_csv(timestamps, imu2_positions, '../position/IMU2_position.csv', columns=['IMU2_X', 'IMU2_Y', 'IMU2_Z'])
-    save_to_csv(timestamps, imu3_positions, '../position/IMU3_position.csv', columns=['IMU3_X', 'IMU3_Y', 'IMU3_Z'])
-
+    save_to_csv(timestamps, imu1_positions, '../position/IMU1_position_seat_over.csv', columns=['IMU1_X', 'IMU1_Y', 'IMU1_Z'])
+    save_to_csv(timestamps, imu2_positions, '../position/IMU2_position_seat_over.csv', columns=['IMU2_X', 'IMU2_Y', 'IMU2_Z'])
+    save_to_csv(timestamps, imu3_positions, '../position/IMU3_position_seat_over.csv', columns=['IMU3_X', 'IMU3_Y', 'IMU3_Z'])
+    
+    # for file in ['imu_train_data_reach_over.csv', 'imu_train_data_reach_over_sampled.csv', 
+    #              'imu_train_data_reach_under.csv', 'imu_train_data_reach_under.csv', 
+    #              'imu_train_data_baseline1_sampled.csv', 'imu_train_data_baseline1.csv',
+    #              'imu_train_data_baseline2_sampled.csv', 'imu_train_data_baseline2.csv',
+    #              'imu_train_data_baseline3_sampled.csv', 'imu_train_data_baseline3.csv']:
+    #     data = pd.read_csv('../train_data_ori/' + file, skiprows=1, usecols=lambda column: column not in ['CH1', 'CH2', 'CH3'])
+    #     temp_acc_max, temp_acc_min = return_acc_max_min(data)
+    #     temp_gyr_max, temp_gyr_min = return_gyr_max_min(data)
+    #     temp_mag_max, temp_mag_min = return_mag_max_min(data)
+    #     if temp_acc_max > max_acc:
+    #         max_acc = temp_acc_max
+    #     if temp_acc_min < min_acc:
+    #         min_acc = temp_acc_min
+    #     if temp_gyr_max > max_gyr:
+    #         max_gyr = temp_gyr_max
+    #     if temp_gyr_min < min_gyr:
+    #         min_gyr = temp_gyr_min
+    #     if temp_mag_max > max_mag:
+    #         max_mag = temp_mag_max
+    #     if temp_mag_min < min_mag:
+    #         min_mag = temp_mag_min
+    # print(max_acc, min_acc, max_gyr, min_gyr, max_mag, min_mag)
     

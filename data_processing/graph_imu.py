@@ -17,13 +17,18 @@ def get_imu_max_min(prefix, df):
     min_vals = df[cols].min().min()
     return max_vals, min_vals
 
-def process_and_save_image(file_name, output_folder):
+def process_and_save_image(file_name, output_folder, normal_path):
     df = pd.read_csv(file_name)
-
-    max_acc, min_acc = get_imu_max_min("Acc", df)
-    max_gyr, min_gyr = get_imu_max_min("Gyr", df)
+    df_normalization = pd.read_csv(normal_path)
+    max_acc, min_acc = get_imu_max_min("Acc", df_normalization)
+    max_gyr, min_gyr = get_imu_max_min("Gyr", df_normalization)
     
-    for col in df.columns:
+    # max_acc = 1000
+    # min_acc = -1000
+    # max_gyr = 1000
+    # min_gyr = -1000
+    
+    for col in df_normalization.columns:
         if "Acc" in col:
             df[col] = normalize_imu(df[col], max_acc, min_acc)
         elif "Gyr" in col:
@@ -44,18 +49,20 @@ def process_and_save_image(file_name, output_folder):
     plt.savefig(os.path.join(output_folder, os.path.basename(file_name).replace(".csv", ".png")))
     plt.close()
     
-input_folder = "../train_data/random/"
-output_folder = "../train_data/normalized_images/random/"
+input_folder = "../train_data/seat_over/"
+output_folder = "../train_data/normalized_images/seat_over/"
 root_dir = "../train_data/normalized_images/"
-data_labels = []
+ori_file = "../train_data_ori/imu_train_data_seat_over_sampled.csv"
+data_labels = ["seat_over"]
 
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
 for i in range(1, 158):
-    file_name = f"random_imu_train_data_part{i}.csv"
+    file_name = f"seat_over_imu_train_data_part{i}.csv"
     full_path = os.path.join(input_folder, file_name)
-    process_and_save_image(full_path, output_folder)
+    normal_path = os.path.join(ori_file)
+    process_and_save_image(full_path, output_folder, normal_path)
 
 output_csv_path = "../train_data/normalized_images/labels.csv"
 df_labels = pd.DataFrame(columns=['filename', 'label'])
