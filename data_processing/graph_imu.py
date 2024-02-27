@@ -60,25 +60,26 @@ root_dir = "../train_data/normalized_images/"
 # ori_file = "../train_data_ori/imu_train_data_baseline_sampled.csv"
 data_labels = ["baseline"]
 
+output_csv_path = "../train_data/normalized_images/labels.csv"
+df_labels = pd.DataFrame(columns=['filename', 'label'])
+
+# Ensure the output directory exists
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
+
+# Read existing labels if the file exists, otherwise create a new DataFrame
+if os.path.exists(output_csv_path):
+    df_labels = pd.read_csv(output_csv_path)
+else:
+    df_labels = pd.DataFrame(columns=['filename', 'label'])
 
 for i in range(1, 158):
     file_name = f"baseline_imu_train_data_part{i}.csv"
     full_path = os.path.join(input_folder, file_name)
     # normal_path = os.path.join(ori_file)
-    process_and_save_image(full_path, output_folder)
+    image_filename = process_and_save_image(full_path, output_folder)
+    # df_labels = df_labels.append({'filename': image_filename, 'label': 'seat_over'}, ignore_index=True)
 
-output_csv_path = "../train_data/normalized_images/labels.csv"
-df_labels = pd.DataFrame(columns=['filename', 'label'])
 
-for subdir, dirs, files in os.walk(root_dir):
-    for file in files:
-        if file.endswith(".png"):
-            file_path = os.path.join(subdir, file)
-            label = os.path.basename(subdir)
-            data_labels.append((file_path.replace(root_dir, ""), label))
-
-df_labels = pd.DataFrame(data_labels, columns=['filename', 'label'])
-
-df_labels.to_csv(output_csv_path, index=False)
+# Save the updated labels to CSV, without the index
+# df_labels.to_csv(output_csv_path, index=False)
