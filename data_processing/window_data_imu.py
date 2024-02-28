@@ -22,11 +22,11 @@ def split_csv_file(filename, path_ori, path, window_size, overlap, label, column
     overlap = 100      # Number of rows to overlap
     
     # Normalize the data
-    for col in df.columns:
-        if 'Acc' in col:
-            df[col] = normalize_column(df[col], -1000, 1000)
-        elif 'Gyr' in col:
-            df[col] = normalize_column(df[col], -1000, 1000)
+    # for col in df.columns:
+    #     if 'Acc' in col:
+    #         df[col] = normalize_column(df[col], -1000, 1000)
+    #     elif 'Gyr' in col:
+    #         df[col] = normalize_column(df[col], -1000, 1000)
     
     # Apply sliding window to the dataframe
     windowed_data = sliding_window(df, window_size, overlap)
@@ -46,8 +46,8 @@ def split_csv_file(filename, path_ori, path, window_size, overlap, label, column
 # Directory and file settings
 directory_ori = "../train_data_ori/"
 directory = "../train_data/"
-filename = "imu_train_data_reach_under_sampled.csv"
-label = "reach_under"
+filename = "imu_train_data_seat_under2_sampled.csv"
+label = "imu_seat_under_2"
 column_names = ['IMU1_AccX', 'IMU1_AccY', 'IMU1_AccZ', 'IMU1_GyrX', 'IMU1_GyrY', 'IMU1_GyrZ', 'IMU1_MagX', 'IMU1_MagY', 'IMU1_MagZ', 
                 'IMU2_AccX', 'IMU2_AccY', 'IMU2_AccZ', 'IMU2_GyrX', 'IMU2_GyrY', 'IMU2_GyrZ', 'IMU2_MagX', 'IMU2_MagY', 'IMU2_MagZ', 
                 'IMU3_AccX', 'IMU3_AccY', 'IMU3_AccZ', 'IMU3_GyrX', 'IMU3_GyrY', 'IMU3_GyrZ', 'IMU3_MagX', 'IMU3_MagY', 'IMU3_MagZ']

@@ -123,7 +123,7 @@ def return_mag_max_min(df):
     return max_mag, min_mag
 
 if __name__ == "__main__":
-    file_path = '../data/Rec7.csv'
+    file_path = '../data/Rec16.csv'
     
     # import pdb; pdb.set_trace()
     
@@ -419,8 +419,8 @@ if __name__ == "__main__":
     # train_imu2.to_csv('../train_data_ori/imu2_train_data.csv', index=False)
     # train_imu3.to_csv('../train_data_ori/imu3_train_data.csv', index=False)
     
-    Train_imu_final_df.to_csv('../train_data_ori/imu_train_data_seat_over.csv', index=False)
-    Train_imu_final_df_sampled.to_csv('../train_data_ori/imu_train_data_seat_over_sampled.csv', index=False)
+    Train_imu_final_df.to_csv('../train_data_ori/imu_train_data_seat_over2.csv', index=False)
+    Train_imu_final_df_sampled.to_csv('../train_data_ori/imu_train_data_seat_over2_sampled.csv', index=False)
 
     ###########################################################################################
     # butter worth filter part
@@ -441,9 +441,9 @@ if __name__ == "__main__":
     # train_imu.to_csv('../butterworth_filtered/imu_train_data.csv', index=False)
     ################################################################################################
     # position update
-    save_to_csv(timestamps, imu1_positions, '../position/IMU1_position_seat_over.csv', columns=['IMU1_X', 'IMU1_Y', 'IMU1_Z'])
-    save_to_csv(timestamps, imu2_positions, '../position/IMU2_position_seat_over.csv', columns=['IMU2_X', 'IMU2_Y', 'IMU2_Z'])
-    save_to_csv(timestamps, imu3_positions, '../position/IMU3_position_seat_over.csv', columns=['IMU3_X', 'IMU3_Y', 'IMU3_Z'])
+    save_to_csv(timestamps, imu1_positions, '../position/IMU1_position_seat_over2.csv', columns=['IMU1_X', 'IMU1_Y', 'IMU1_Z'])
+    save_to_csv(timestamps, imu2_positions, '../position/IMU2_position_seat_over2.csv', columns=['IMU2_X', 'IMU2_Y', 'IMU2_Z'])
+    save_to_csv(timestamps, imu3_positions, '../position/IMU3_position_seat_over2.csv', columns=['IMU3_X', 'IMU3_Y', 'IMU3_Z'])
     
     # for file in ['imu_train_data_reach_over.csv', 'imu_train_data_reach_over_sampled.csv', 
     #              'imu_train_data_reach_under.csv', 'imu_train_data_reach_under.csv', 
