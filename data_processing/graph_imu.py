@@ -73,11 +73,11 @@ def process_and_save_image(file_name, output_folder, max_acc, min_acc, max_gyr, 
     plt.savefig(os.path.join(output_folder, os.path.basename(file_name).replace(".csv", ".png")))
     plt.close()
     
-input_folder = "../train_data/IMU/imu_reach_under_1/"
-output_folder = "../train_data/normalized_images_1/reach_under/"
+input_folder = "../train_data/IMU/imu_baseline_2/"
+output_folder = "../train_data/normalized_images_1/baseline/"
 root_dir = "../train_data/normalized_images_1/"
 # ori_file = "../train_data_ori/imu_train_data_baseline_sampled.csv"
-data_labels = ["reach_under_1"]
+data_labels = ["baseline"]
 
 # output_csv_path = "../train_data/normalized_images/labels.csv"
 # df_labels = pd.DataFrame(columns=['filename', 'label'])
@@ -95,7 +95,7 @@ if not os.path.exists(output_folder):
 file_numbers = 50
 
 for i in range(1, file_numbers+1):
-    file_name = f"reach_under_imu_train_data_part{i}.csv"
+    file_name = f"imu_baseline_2_imu_train_data_part{i}.csv"
     full_path = os.path.join(input_folder, file_name)
     df = pd.read_csv(full_path)
     temp_acc_max, temp_acc_min = 0, 0
@@ -125,7 +125,7 @@ range_Mag = temp_Mag_max - temp_Mag_min
 print("range", range_acc, range_gyr, range_Mag)
     
 for i in range(1, file_numbers+1):
-    file_name = f"reach_under_imu_train_data_part{i}.csv"
+    file_name = f"imu_baseline_2_imu_train_data_part{i}.csv"
     full_path = os.path.join(input_folder, file_name)
     # normal_path = os.path.join(ori_file)
     image_filename = process_and_save_image(full_path, output_folder, temp_acc_max, temp_acc_min, temp_gyr_max, temp_gyr_min, temp_Mag_max, temp_Mag_min,
