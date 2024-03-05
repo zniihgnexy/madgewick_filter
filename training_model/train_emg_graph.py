@@ -17,7 +17,7 @@ df_emg_labels = pd.read_csv(emg_labels_csv_path)
 emg_data_dir = 'E:/master-2/madgewick_filter/train_data/train_reach/EMG/'
 
 img_width, img_height = 256, 256
-epochs = 100
+epochs = 200
 batch_size = 128
 
 # Splitting EMG data
@@ -57,14 +57,24 @@ y = Dropout(0.2)(y)
 
 y = Conv2D(16, (3, 3), activation='relu')(y)
 y = MaxPooling2D(2, 2)(y)
+
 y = Flatten()(y)
+y = Dense(128, activation='relu')(y)
 y = Dense(64, activation='relu')(y)
-y = Dropout(0.5)(y)
+y = Dense(32, activation='relu')(y)
+y = Dropout(0.25)(y)
 output = Dense(3, activation='softmax')(y)
 emg_model = Model(inputs=emg_input, outputs=output)
 
 # Compile EMG model
 emg_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+checkpoint_path = 'E:/master-2/madgewick_filter/training_model/checkpoint/emg_best_model.h5'
+checkpoint = ModelCheckpoint(filepath=checkpoint_path,
+                            monitor='val_accuracy',
+                            verbose=1,
+                            save_best_only=True,
+                            mode='max')
 
 # Train EMG model
 history = emg_model.fit(
@@ -72,7 +82,8 @@ history = emg_model.fit(
     steps_per_epoch=len(train_emg_generator),
     epochs=epochs,
     validation_data=validation_emg_generator,
-    validation_steps=len(validation_emg_generator)
+    validation_steps=len(validation_emg_generator),
+    callbacks=[checkpoint]
 )
 
 # Plotting training results for EMG

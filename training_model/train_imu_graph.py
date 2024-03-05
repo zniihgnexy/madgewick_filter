@@ -70,13 +70,21 @@ imu_model = Model(inputs=imu_input, outputs=output)
 # Compile IMU model
 imu_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
+checkpoint_path = 'E:/master-2/madgewick_filter/training_model/checkpoint/imu_best_model.h5'
+checkpoint = ModelCheckpoint(filepath=checkpoint_path,
+                            monitor='val_accuracy',
+                            verbose=1,
+                            save_best_only=True,
+                            mode='max')
+
 # Train IMU model
 history = imu_model.fit(
     train_imu_generator,
     steps_per_epoch=len(train_imu_generator),
     epochs=epochs,
     validation_data=validation_imu_generator,
-    validation_steps=len(validation_imu_generator)
+    validation_steps=len(validation_imu_generator),
+    callbacks=[checkpoint]
 )
 
 # Plotting training results for IMU
