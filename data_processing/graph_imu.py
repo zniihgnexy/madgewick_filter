@@ -1,6 +1,7 @@
 # change the csv file contents to a frequency graph with color
 
 # from turtle import pd
+import random
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -40,24 +41,11 @@ def process_and_save_image(file_name, output_folder, max_acc, min_acc, max_gyr, 
     # min_gyr = -1000
     
     for col in df.columns:
-        if "IMU1_Acc" in col:
-            df[col] = normalize_imu1(df[col],max_acc, min_acc)
-        elif "IMU2_Acc" in col:
-            df[col] = normalize_imu1(df[col],max_acc, min_acc)
-        elif "IMU3_Acc" in col:
-            df[col] = normalize_imu1(df[col],max_acc, min_acc)
+        if "Acc" in col:
+            df[col] = normalize_imu1(df[col], max_acc, min_acc)
         elif "Gyr" in col:
-            mean_gyr = (max_gyr + min_gyr) / 2
-            # df[col] = normalize_imu2(df[col], mean_gyr)
             df[col] = normalize_imu1(df[col], max_gyr, min_gyr)
-        elif "IMU1_Mag" in col:
-            mean = df[col].mean()
-            df[col] = normalize_imu2(df[col], range_Mag, max_Mag, min_Mag)
-        elif "IMU2_Mag" in col:
-            mean = df[col].mean()
-            df[col] = normalize_imu2(df[col], range_Mag, max_Mag, min_Mag)
-        elif "IMU3_Mag" in col:
-            mean = df[col].mean()
+        elif "Mag" in col:
             df[col] = normalize_imu2(df[col], range_Mag, max_Mag, min_Mag)
 
     data_normalized = df.to_numpy()
@@ -73,65 +61,38 @@ def process_and_save_image(file_name, output_folder, max_acc, min_acc, max_gyr, 
     plt.savefig(os.path.join(output_folder, os.path.basename(file_name).replace(".csv", ".png")))
     plt.close()
     
-input_folder = "../train_data/IMU/imu_baseline_2/"
-output_folder = "../train_data/normalized_images_1/baseline/"
-root_dir = "../train_data/normalized_images_1/"
-# ori_file = "../train_data_ori/imu_train_data_baseline_sampled.csv"
-data_labels = ["baseline"]
+def process_files_in_folder(input_folder, train_output_folder_base, test_output_folder_base, train_ratio=0.6):
+    for subdir, dirs, files in os.walk(input_folder):
+        label = os.path.basename(subdir)
+        all_files = [file for file in files if file.endswith(".csv")]
+        random.shuffle(all_files)  # Shuffle to ensure random distribution
 
-# output_csv_path = "../train_data/normalized_images/labels.csv"
-# df_labels = pd.DataFrame(columns=['filename', 'label'])
+        # Calculate the split index
+        split_index = int(len(all_files) * train_ratio)
+        train_files = all_files[:split_index]
+        test_files = all_files[split_index:]
 
-# Ensure the output directory exists
-if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
+        for file_set, output_folder_base in [(train_files, train_output_folder_base), (test_files, test_output_folder_base)]:
+            output_folder = os.path.join(output_folder_base, label)
+            if not os.path.exists(output_folder):
+                os.makedirs(output_folder)
 
-# # Read existing labels if the file exists, otherwise create a new DataFrame
-# if os.path.exists(output_csv_path):
-#     df_labels = pd.read_csv(output_csv_path)
-# else:
-#     df_labels = pd.DataFrame(columns=['filename', 'label'])
+            for file in file_set:
+                full_path = os.path.join(subdir, file)
+                df = pd.read_csv(full_path)
 
-file_numbers = 50
+                temp_max_min_vals = [get_imu_max_min(f'IMU{j}_{sensor}', df) for j in range(1, 4) for sensor in ['Acc', 'Gyr', 'Mag']]
+                max_vals, min_vals = zip(*temp_max_min_vals)
+                max_acc, min_acc, max_gyr, min_gyr, max_Mag, min_Mag = max(max_vals), min(min_vals), max(max_vals), min(min_vals), max(max_vals), min(min_vals)
 
-for i in range(1, file_numbers+1):
-    file_name = f"imu_baseline_2_imu_train_data_part{i}.csv"
-    full_path = os.path.join(input_folder, file_name)
-    df = pd.read_csv(full_path)
-    temp_acc_max, temp_acc_min = 0, 0
-    temp_gyr_max, temp_gyr_min = 0, 0
-    temp_Mag_max, temp_Mag_min = 0, 0
-    for j in range(1, 4):
-        max_acc, min_acc = get_imu_max_min(f'IMU{j}_Acc', df)
-        max_gyr, min_gyr = get_imu_max_min(f'IMU{j}_Gyr', df)
-        max_Mag, min_Mag = get_imu_max_min(f'IMU{j}_Mag', df)
-        if max_acc > temp_acc_max:
-            temp_acc_max = max_acc
-        if min_acc < temp_acc_min:
-            temp_acc_min = min_acc
-        if max_gyr > temp_gyr_max:
-            temp_gyr_max = max_gyr
-        if min_gyr < temp_gyr_min:
-            temp_gyr_min = min_gyr
-        if max_Mag > temp_Mag_max:
-            temp_Mag_max = max_Mag
-        if min_Mag < temp_Mag_min:
-            temp_Mag_min = min_Mag
-            
-print(temp_acc_max, temp_acc_min, temp_gyr_max, temp_gyr_min, temp_Mag_max, temp_Mag_min)
-range_acc = temp_acc_max - temp_acc_min
-range_gyr = temp_gyr_max - temp_gyr_min
-range_Mag = temp_Mag_max - temp_Mag_min
-print("range", range_acc, range_gyr, range_Mag)
-    
-for i in range(1, file_numbers+1):
-    file_name = f"imu_baseline_2_imu_train_data_part{i}.csv"
-    full_path = os.path.join(input_folder, file_name)
-    # normal_path = os.path.join(ori_file)
-    image_filename = process_and_save_image(full_path, output_folder, temp_acc_max, temp_acc_min, temp_gyr_max, temp_gyr_min, temp_Mag_max, temp_Mag_min,
-                                            range_acc, range_gyr, range_Mag)
-    # df_labels = df_labels.append({'filename': image_filename, 'label': 'seat_over'}, ignore_index=True)
+                range_acc = max_acc - min_acc
+                range_gyr = max_gyr - min_gyr
+                range_Mag = max_Mag - min_Mag
+                
+                process_and_save_image(full_path, output_folder, max_acc, min_acc, max_gyr, min_gyr, max_Mag, min_Mag, range_acc, range_gyr, range_Mag)
 
+input_folder = "../train_data_fv/"
+train_output_folder_base = "../train_data_imu_pic/"
+test_output_folder_base = "../test_data_imu_pic/"
 
-# Save the updated labels to CSV, without the index
-# df_labels.to_csv(output_csv_path, index=False)
+process_files_in_folder(input_folder, train_output_folder_base, test_output_folder_base)

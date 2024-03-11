@@ -82,9 +82,9 @@ batch_size_emg = 64
 
 datagen = ImageDataGenerator(rescale=1./255)
 
-imu_labels_csv_path = 'E:/master-2/madgewick_filter/train_data/train_reach/IMU/output_imu_labels.csv'
+imu_labels_csv_path = 'E:/master-2/madgewick_filter/train_data_imu_pic/train_labels.csv'
 df_imu_labels = pd.read_csv(imu_labels_csv_path)
-imu_data_dir = 'E:/master-2/madgewick_filter/train_data/train_reach/IMU/'
+imu_data_dir = 'E:/master-2/madgewick_filter/train_data_imu_pic/'
 train_df_imu, validate_df_imu = train_test_split(df_imu_labels, test_size=0.2, random_state=42, shuffle=True)
 
 train_imu_generator = datagen.flow_from_dataframe(
@@ -175,7 +175,7 @@ print("IMU predictions shape:", imu_predictions.shape)
 print("EMG predictions shape:", emg_predictions.shape)
 
 
-epochs = 100
+epochs = 10
 
 optimizer_imu = tf.keras.optimizers.Adam()
 optimizer_emg = tf.keras.optimizers.Adam()
