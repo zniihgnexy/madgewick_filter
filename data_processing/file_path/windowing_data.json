@@ -1,0 +1,69 @@
+{
+    "tasks": [
+    {
+        "filename": "imu_train_data_baseline1_sampled.csv",
+        "label": "baseline1"
+    },
+    {
+        "filename": "imu_train_data_baseline2_sampled.csv",
+        "label": "baseline2"
+    },
+    {
+        "filename": "imu_train_data_baseline3_sampled.csv",
+        "label": "baseline3"
+    },
+    {
+        "filename": "imu_train_data_baseline4_sampled.csv",
+        "label": "baseline4"
+    },
+    {
+        "filename": "imu_train_data_baseline5_sampled.csv",
+        "label": "baseline5"
+    },
+    {
+        "filename": "imu_train_data_baseline6_sampled.csv",
+        "label": "baseline6"
+    },
+    {
+        "filename": "imu_train_data_drop_over_sampled.csv",
+        "label": "drop_over"
+    },
+    {
+        "filename": "imu_train_data_drop_over2_sampled.csv",
+        "label": "drop_over2"
+    },
+    {
+        "filename": "imu_train_data_drop_under2_sampled.csv",
+        "label": "drop_under2"
+    },
+    {
+        "filename": "imu_train_data_reach_over_sampled.csv",
+        "label": "reach_over"
+    },
+    {
+        "filename": "imu_train_data_reach_over2_sampled.csv",
+        "label": "reach_over2"
+    },
+    {
+        "filename": "imu_train_data_reach_under_sampled.csv",
+        "label": "reach_under"
+    },
+    {
+        "filename": "imu_train_data_reach_under2_sampled.csv",
+        "label": "reach_under2"
+    },
+    {
+        "filename": "imu_train_data_seat_over_sampled.csv",
+        "label": "seat_over"
+    },
+    {
+        "filename": "imu_train_data_seat_over2_sampled.csv",
+        "label": "seat_over2"
+    },
+    {
+        "filename": "imu_train_data_seat_under2_sampled.csv",
+        "label": "seat_under2"
+    }
+    ]
+}
+    
