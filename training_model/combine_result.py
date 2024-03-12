@@ -26,18 +26,31 @@ train_losses = []
 train_accuracies = []
 fusion_accuracy = []
 
-def fuse_and_predict(imu_probs, emg_probs):
-    fused_probs = (imu_probs + emg_probs) / 2
-    return np.argmax(fused_probs, axis=1)
+class FusionNetwork(tf.keras.Model):
+    def __init__(self, num_classes):
+        super(FusionNetwork, self).__init__()
+        self.dense1 = tf.keras.layers.Dense(128, activation='relu')
+        self.dense2 = tf.keras.layers.Dense(num_classes, activation='softmax')
 
-def train_one_epoch(imu_model, emg_model, train_imu_gen, train_emg_gen, 
-                    optimizer_imu, optimizer_emg, loss_fn, train_loss_metric_imu, train_accuracy_metric_imu, 
-                    train_loss_metric_emg, train_accuracy_metric_emg, fusion_accuracy_metric, steps):
+    def call(self, imu_output, emg_output):
+        combined = tf.concat([imu_output, emg_output], axis=1)
+        x = self.dense1(combined)
+        return self.dense2(x)
+
+
+def train_one_epoch(imu_model, emg_model, fusion_model, train_imu_gen, train_emg_gen, 
+                    optimizer_imu, optimizer_emg, optimizer_fusion, loss_fn, 
+                    train_loss_metric_imu, train_accuracy_metric_imu, 
+                    train_loss_metric_emg, train_accuracy_metric_emg, 
+                    train_loss_metric_fusion, train_accuracy_metric_fusion, 
+                    fusion_accuracy_metric, steps):
 
     train_loss_metric_imu.reset_states()
     train_accuracy_metric_imu.reset_states()
     train_loss_metric_emg.reset_states()
     train_accuracy_metric_emg.reset_states()
+    train_loss_metric_fusion.reset_states()
+    train_accuracy_metric_fusion.reset_states()
     fusion_accuracy_metric.reset_states()
     
     for step in range(steps):
@@ -60,19 +73,24 @@ def train_one_epoch(imu_model, emg_model, train_imu_gen, train_emg_gen,
         train_loss_metric_emg.update_state(loss_emg)
         train_accuracy_metric_emg.update_state(emg_labels, emg_predictions)
 
-        fused_predictions = (imu_predictions + emg_predictions) / 2
-        fusion_accuracy_metric.update_state(imu_labels, fused_predictions)
-        # fusion_accuracy.append(fusion_accuracy_metric.result().numpy())
+        # Train fusion model
+        with tf.GradientTape() as tape:
+            fused_predictions = fusion_model(imu_predictions, emg_predictions, training=True)
+            loss_fusion = loss_fn(imu_labels, fused_predictions)  # Assume using imu_labels for fusion
+        gradients_fusion = tape.gradient(loss_fusion, fusion_model.trainable_variables)
+        optimizer_fusion.apply_gradients(zip(gradients_fusion, fusion_model.trainable_variables))
+        train_loss_metric_fusion.update_state(loss_fusion)
+        train_accuracy_metric_fusion.update_state(imu_labels, fused_predictions)
 
         if step % 10 == 0:
             print(f'Step {step}, IMU Loss: {train_loss_metric_imu.result().numpy()}, IMU Accuracy: {train_accuracy_metric_imu.result().numpy()}')
             print(f'Step {step}, EMG Loss: {train_loss_metric_emg.result().numpy()}, EMG Accuracy: {train_accuracy_metric_emg.result().numpy()}')
-            print(f'Step {step}, Fusion Accuracy: {fusion_accuracy_metric.result().numpy()}')
-            fusion_accuracy.append(fusion_accuracy_metric.result().numpy())
+            print(f'Step {step}, Fusion Loss: {train_loss_metric_fusion.result().numpy()}, Fusion Accuracy: {train_accuracy_metric_fusion.result().numpy()}')
+            fusion_accuracy.append(train_accuracy_metric_fusion.result().numpy())
 
     print(f'End of epoch, IMU Loss: {train_loss_metric_imu.result().numpy()}, IMU Accuracy: {train_accuracy_metric_imu.result().numpy()}')
     print(f'End of epoch, EMG Loss: {train_loss_metric_emg.result().numpy()}, EMG Accuracy: {train_accuracy_metric_emg.result().numpy()}')
-    print(f'End of epoch, Fusion Accuracy: {fusion_accuracy_metric.result().numpy()}')
+    print(f'End of epoch, Fusion Loss: {train_loss_metric_fusion.result().numpy()}, Fusion Accuracy: {train_accuracy_metric_fusion.result().numpy()}')
 
 img_width, img_height = 256, 256
 epochs_imu = 10
@@ -82,7 +100,7 @@ batch_size_emg = 64
 
 datagen = ImageDataGenerator(rescale=1./255)
 
-imu_labels_csv_path = 'E:/master-2/madgewick_filter/train_data_imu_pic/train_labels.csv'
+imu_labels_csv_path = 'E:/master-2/madgewick_filter/train_data_imu_pic/train_imu_labels.csv'
 df_imu_labels = pd.read_csv(imu_labels_csv_path)
 imu_data_dir = 'E:/master-2/madgewick_filter/train_data_imu_pic/'
 train_df_imu, validate_df_imu = train_test_split(df_imu_labels, test_size=0.2, random_state=42, shuffle=True)
@@ -105,9 +123,9 @@ validation_imu_generator = datagen.flow_from_dataframe(
     batch_size=batch_size_imu,
     class_mode='categorical')
 
-emg_labels_csv_path = 'E:/master-2/madgewick_filter/train_data/train_reach/EMG/output_emg_labels.csv'
+emg_labels_csv_path = "E:/master-2/madgewick_filter/SplitEMG_train_data_20240312/train_emg_labels.csv"
 df_emg_labels = pd.read_csv(emg_labels_csv_path)
-emg_data_dir = 'E:/master-2/madgewick_filter/train_data/train_reach/EMG/'
+emg_data_dir = 'E:/master-2/madgewick_filter/SplitEMG_train_data_20240312'
 train_df_emg, validate_df_emg = train_test_split(df_emg_labels, test_size=0.2, random_state=42, shuffle=True)
 
 train_emg_generator = datagen.flow_from_dataframe(
@@ -138,7 +156,7 @@ x = Conv2D(64, (3, 3), activation='relu')(x)
 x = MaxPooling2D(2, 2)(x)
 x = Flatten()(x)
 imu_dense = Dense(128, activation='relu')(x)
-imu_output = Dense(3, activation='softmax', name='imu_output')(imu_dense)
+imu_output = Dense(7, activation='softmax', name='imu_output')(imu_dense)
 imu_model = Model(inputs=imu_input, outputs=[imu_output, imu_dense])
 
 # EMG
@@ -151,11 +169,12 @@ y = Conv2D(64, (3, 3), activation='relu')(y)
 y = MaxPooling2D(2, 2)(y)
 y = Flatten()(y)
 emg_dense  = Dense(128, activation='relu')(y)
-emg_output = Dense(3, activation='softmax', name='emg_output')(emg_dense)
+emg_output = Dense(7, activation='softmax', name='emg_output')(emg_dense)
 emg_model = Model(inputs=emg_input, outputs=[emg_output, emg_dense])
 
 imu_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 emg_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+fusion_model = FusionNetwork(num_classes=7)
 
 checkpoint_imu = ModelCheckpoint(filepath='imu_best_model.h5', monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
 checkpoint_emg = ModelCheckpoint(filepath='emg_best_model.h5', monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
@@ -179,22 +198,33 @@ epochs = 10
 
 optimizer_imu = tf.keras.optimizers.Adam()
 optimizer_emg = tf.keras.optimizers.Adam()
+optimizer_fusion = tf.keras.optimizers.Adam()
 
 train_loss_metric_imu = tf.keras.metrics.Mean()
 train_accuracy_metric_imu = tf.keras.metrics.CategoricalAccuracy()
 train_loss_metric_emg = tf.keras.metrics.Mean()
 train_accuracy_metric_emg = tf.keras.metrics.CategoricalAccuracy()
+train_loss_metric_fusion = tf.keras.metrics.Mean()
+train_accuracy_metric_fusion = tf.keras.metrics.CategoricalAccuracy()
 fusion_accuracy_metric = tf.keras.metrics.CategoricalAccuracy()
 
-# Assuming 'steps_per_epoch' is already defined correctly
 steps_per_epoch = min(len(train_imu_generator), len(train_emg_generator))
+early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, verbose=1)
 
-# Now, call the function with all arguments
 for epoch in range(epochs):
     print(f'Start of Epoch {epoch+1}')
-    train_one_epoch(imu_model, emg_model, train_imu_generator, train_emg_generator, optimizer_imu, optimizer_emg, loss_fn, train_loss_metric_imu, train_accuracy_metric_imu, train_loss_metric_emg, train_accuracy_metric_emg, fusion_accuracy_metric, steps_per_epoch)
+    train_one_epoch(imu_model, emg_model, fusion_model, train_imu_generator, train_emg_generator, 
+                    optimizer_imu, optimizer_emg, optimizer_fusion, loss_fn, 
+                    train_loss_metric_imu, train_accuracy_metric_imu, 
+                    train_loss_metric_emg, train_accuracy_metric_emg, 
+                    train_loss_metric_fusion, train_accuracy_metric_fusion, 
+                    fusion_accuracy_metric, steps_per_epoch)
+    print(f'End of Epoch {epoch+1}')
+    # fusion_model.save_weights(f'fusion_model_weights_epoch_{epoch+1}.h5')
 
 print("Fusion Accuracy:", fusion_accuracy)
+# fusion_model.save('E:/master-2/madgewick_filter/training_model/checkpoint/fusion_model_weights_final.h5')
+fusion_model.save_weights('E:/master-2/madgewick_filter/training_model/checkpoint/fusion_model_weights_final.h5')
 
 import matplotlib.pyplot as plt
 # After all episodes

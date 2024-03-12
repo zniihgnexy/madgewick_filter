@@ -23,9 +23,9 @@ if gpus:
 # df_imu_labels = pd.read_csv(imu_labels_csv_path)
 # imu_data_dir = 'E:/master-2/madgewick_filter/train_data/train_reach/IMU/'
 
-imu_labels_csv_path = 'D:/00_ACADEMIC/Imperial_college/AML_teams_LAB/1_code/madgewick_filter/train_data/train_reach/IMU/output_imu_labels.csv'
+imu_labels_csv_path = 'E:/master-2/madgewick_filter/train_data_imu_pic/train_labels.csv'
 df_imu_labels = pd.read_csv(imu_labels_csv_path)
-imu_data_dir = 'D:/00_ACADEMIC/Imperial_college/AML_teams_LAB/1_code/madgewick_filter/train_data/train_reach/IMU/'
+imu_data_dir = 'E:/master-2/madgewick_filter/train_data_imu_pic/'
 
 img_width, img_height = 256, 256
 epochs = 100
@@ -67,7 +67,7 @@ x = MaxPooling2D(2, 2)(x)
 x = Flatten()(x)
 x = Dense(64, activation='relu')(x)
 x = Dropout(0.5)(x)
-output = Dense(3, activation='softmax')(x)
+output = Dense(7, activation='softmax')(x)
 imu_model = Model(inputs=imu_input, outputs=output)
 
 # Compile IMU model

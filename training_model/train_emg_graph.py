@@ -12,9 +12,9 @@ from tensorflow.keras.mixed_precision import set_global_policy
 set_global_policy('mixed_float16')
 
 # Load EMG data
-emg_labels_csv_path = 'E:/master-2/madgewick_filter/train_data/train_reach/EMG/output_emg_labels.csv'
+emg_labels_csv_path = 'E:/master-2/madgewick_filter/SplitEMG_train_data_20240312/train_emg_labels.csv'
 df_emg_labels = pd.read_csv(emg_labels_csv_path)
-emg_data_dir = 'E:/master-2/madgewick_filter/train_data/train_reach/EMG/'
+emg_data_dir = 'E:/master-2/madgewick_filter/SplitEMG_train_data_20240312/'
 
 img_width, img_height = 256, 256
 epochs = 200
@@ -63,7 +63,7 @@ y = Dense(128, activation='relu')(y)
 y = Dense(64, activation='relu')(y)
 y = Dense(32, activation='relu')(y)
 y = Dropout(0.25)(y)
-output = Dense(3, activation='softmax')(y)
+output = Dense(7, activation='softmax')(y)
 emg_model = Model(inputs=emg_input, outputs=output)
 
 # Compile EMG model
@@ -73,7 +73,7 @@ checkpoint_path = 'E:/master-2/madgewick_filter/training_model/checkpoint/emg_be
 checkpoint = ModelCheckpoint(filepath=checkpoint_path,
                             monitor='val_accuracy',
                             verbose=1,
-                            save_best_only=True,
+                            save_best_only=False,
                             mode='max')
 
 # Train EMG model

@@ -2,9 +2,14 @@ import os
 import pandas as pd
 
 data_roots = {
-    'E:/master-2/madgewick_filter/train_data_imu_pic': 'train_labels.csv',
-    'E:/master-2/madgewick_filter/test_data_imu_pic': 'test_labels.csv'
+    'E:/master-2/madgewick_filter/train_data_imu_pic': 'train_imu_labels.csv',
+    'E:/master-2/madgewick_filter/test_data_imu_pic': 'test_imu_labels.csv'
 }
+
+# data_roots = {
+#     'E:/master-2/madgewick_filter/SplitEMG_train_data_20240312': 'train_emg_labels.csv',
+#     'E:/master-2/madgewick_filter/SplitEMG_test_data_20240312': 'test_emg_labels.csv'
+# }
 
 for data_root, label_file_name in data_roots.items():
     data_info = []
