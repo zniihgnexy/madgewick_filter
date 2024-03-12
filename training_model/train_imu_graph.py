@@ -10,11 +10,15 @@ from tensorflow.keras.layers import Input, Dense, Flatten, Dropout
 from tensorflow.keras.models import Model
 from tensorflow.keras.mixed_precision import set_global_policy
 set_global_policy('mixed_float16')
-
+# D:\00_ACADEMIC\Imperial_college\AML_teams_LAB\1_code\
 # Load IMU data
-imu_labels_csv_path = 'E:/master-2/madgewick_filter/train_data/train_reach/IMU/output_imu_labels.csv'
+# imu_labels_csv_path = 'E:/master-2/madgewick_filter/train_data/train_reach/IMU/output_imu_labels.csv'
+# df_imu_labels = pd.read_csv(imu_labels_csv_path)
+# imu_data_dir = 'E:/master-2/madgewick_filter/train_data/train_reach/IMU/'
+
+imu_labels_csv_path = 'D:/00_ACADEMIC/Imperial_college/AML_teams_LAB/1_code/madgewick_filter/train_data/train_reach/IMU/output_imu_labels.csv'
 df_imu_labels = pd.read_csv(imu_labels_csv_path)
-imu_data_dir = 'E:/master-2/madgewick_filter/train_data/train_reach/IMU/'
+imu_data_dir = 'D:/00_ACADEMIC/Imperial_college/AML_teams_LAB/1_code/madgewick_filter/train_data/train_reach/IMU/'
 
 img_width, img_height = 256, 256
 epochs = 100
