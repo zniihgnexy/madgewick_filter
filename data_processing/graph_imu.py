@@ -2,6 +2,7 @@
 
 # from turtle import pd
 import random
+import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -61,11 +62,11 @@ def process_and_save_image(file_name, output_folder, max_acc, min_acc, max_gyr, 
     plt.savefig(os.path.join(output_folder, os.path.basename(file_name).replace(".csv", ".png")))
     plt.close()
     
-def process_files_in_folder(input_folder, train_output_folder_base, test_output_folder_base, train_ratio=0.6):
+def process_files_in_folder(input_folder, train_output_folder_base, test_output_folder_base, train_ratio=1.0):
     for subdir, dirs, files in os.walk(input_folder):
         label = os.path.basename(subdir)
         all_files = [file for file in files if file.endswith(".csv")]
-        random.shuffle(all_files)  # Shuffle to ensure random distribution
+        random.shuffle(all_files)
 
         # Calculate the split index
         split_index = int(len(all_files) * train_ratio)
@@ -89,10 +90,15 @@ def process_files_in_folder(input_folder, train_output_folder_base, test_output_
                 range_gyr = max_gyr - min_gyr
                 range_Mag = max_Mag - min_Mag
                 
+                # print("save image from file: ", full_path)
                 process_and_save_image(full_path, output_folder, max_acc, min_acc, max_gyr, min_gyr, max_Mag, min_Mag, range_acc, range_gyr, range_Mag)
 
-input_folder = "../train_data_fv/"
-train_output_folder_base = "../train_data_imu_pic/"
-test_output_folder_base = "../test_data_imu_pic/"
+# input_folder = "E:/master-2/madgewick_filter/video_imu/window_data/"
+# train_output_folder_base = "E:/master-2/madgewick_filter/video_imu/img_imu/"
+# test_output_folder_base = "E:/master-2/madgewick_filter/video_imu/img_imu/"
+
+input_folder = sys.argv[1]
+train_output_folder_base = sys.argv[2]
+test_output_folder_base = sys.argv[3]
 
 process_files_in_folder(input_folder, train_output_folder_base, test_output_folder_base)

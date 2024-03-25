@@ -1,0 +1,33 @@
+{
+    "tasks": [
+    {
+        "filename": "imu_train_data_baseline_sampled.csv",
+        "label": "baseline"
+    },
+    {
+        "filename": "imu_train_data_drop_over_sampled.csv",
+        "label": "drop_over"
+    },
+    {
+        "filename": "imu_train_data_drop_under_sampled.csv",
+        "label": "drop_under"
+    },
+    {
+        "filename": "imu_train_data_reach_over_sampled.csv",
+        "label": "reach_over"
+    },
+    {
+        "filename": "imu_train_data_reach_under_sampled.csv",
+        "label": "reach_under"
+    },
+    {
+        "filename": "imu_train_data_seat_over_sampled.csv",
+        "label": "seat_over"
+    },
+    {
+        "filename": "imu_train_data_seat_under_sampled.csv",
+        "label": "seat_under"
+    }
+    ]
+}
+    

@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import pandas as pd
 from imu_filter import imu_filter
@@ -123,7 +124,9 @@ def return_mag_max_min(df):
     return max_mag, min_mag
 
 if __name__ == "__main__":
-    file_path = '../data/Rec16.csv'
+    file_path = sys.argv[1]
+
+    # file_path = '../data/Rec16.csv'
     
     # import pdb; pdb.set_trace()
     
@@ -225,7 +228,7 @@ if __name__ == "__main__":
     compl_data_imu3 = []
     imu3_train_data = []
 
-    print("\nIMU 1")
+    print("\nIMU 1 EMG 1")
     for index, row in imu1.iterrows():
         if not row.isnull().any():
             ax_list1.append(row['AccX(mg)'])
@@ -272,7 +275,7 @@ if __name__ == "__main__":
             # put acc and gyr data into a list
             imu1_train_data.append([ax, ay, az, gx, gy, gz, mx, my, mz])
 
-    print("\nIMU 2")
+    print("\nIMU 2 EMG 2")
     for index, row in imu2.iterrows():
         if not row.isnull().any():
             ax_list2.append(row['AccX(mg).1'])
@@ -318,7 +321,7 @@ if __name__ == "__main__":
             
             imu2_train_data.append([ax, ay, az, gx, gy, gz, mx, my, mz])
 
-    print("\nIMU 3")
+    print("\nIMU 3 EMG 3")
     # check if the values are NA, if yes, skip this line
     for index, row in imu3.iterrows():
         if not row.isnull().any():
@@ -418,9 +421,16 @@ if __name__ == "__main__":
     # train_imu1.to_csv('../train_data_ori/imu1_train_data.csv', index=False)
     # train_imu2.to_csv('../train_data_ori/imu2_train_data.csv', index=False)
     # train_imu3.to_csv('../train_data_ori/imu3_train_data.csv', index=False)
+    Train_imu_final_df_path = sys.argv[2]
+    Train_imu_final_df_sampled_path = sys.argv[3]
     
-    Train_imu_final_df.to_csv('../train_data_ori/imu_train_data_seat_over2.csv', index=False)
-    Train_imu_final_df_sampled.to_csv('../train_data_ori/imu_train_data_seat_over2_sampled.csv', index=False)
+    # print("Sample and filter data of", Train_imu_final_df_path[48:-4])
+    Train_imu_final_df.to_csv(Train_imu_final_df_path, index=False)
+    Train_imu_final_df_sampled.to_csv(Train_imu_final_df_sampled_path, index=False)
+    
+    
+    # Train_imu_final_df.to_csv('../train_data_ori/imu_train_data_seat_over2.csv', index=False)
+    # Train_imu_final_df_sampled.to_csv('../train_data_ori/imu_train_data_seat_over2_sampled.csv', index=False)
 
     ###########################################################################################
     # butter worth filter part
@@ -441,9 +451,9 @@ if __name__ == "__main__":
     # train_imu.to_csv('../butterworth_filtered/imu_train_data.csv', index=False)
     ################################################################################################
     # position update
-    save_to_csv(timestamps, imu1_positions, '../position/IMU1_position_seat_over2.csv', columns=['IMU1_X', 'IMU1_Y', 'IMU1_Z'])
-    save_to_csv(timestamps, imu2_positions, '../position/IMU2_position_seat_over2.csv', columns=['IMU2_X', 'IMU2_Y', 'IMU2_Z'])
-    save_to_csv(timestamps, imu3_positions, '../position/IMU3_position_seat_over2.csv', columns=['IMU3_X', 'IMU3_Y', 'IMU3_Z'])
+    # save_to_csv(timestamps, imu1_positions, '../position/IMU1_position_seat_over2.csv', columns=['IMU1_X', 'IMU1_Y', 'IMU1_Z'])
+    # save_to_csv(timestamps, imu2_positions, '../position/IMU2_position_seat_over2.csv', columns=['IMU2_X', 'IMU2_Y', 'IMU2_Z'])
+    # save_to_csv(timestamps, imu3_positions, '../position/IMU3_position_seat_over2.csv', columns=['IMU3_X', 'IMU3_Y', 'IMU3_Z'])
     
     # for file in ['imu_train_data_reach_over.csv', 'imu_train_data_reach_over_sampled.csv', 
     #              'imu_train_data_reach_under.csv', 'imu_train_data_reach_under.csv', 

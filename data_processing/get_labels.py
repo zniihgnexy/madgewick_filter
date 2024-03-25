@@ -1,9 +1,15 @@
 import os
+import sys
 import pandas as pd
 
+# data_roots = {
+#     'E:/master-2/madgewick_filter/train_data_imu_pic': 'train_imu_labels.csv',
+#     'E:/master-2/madgewick_filter/test_data_imu_pic': 'test_imu_labels.csv'
+# }
+
 data_roots = {
-    'E:/master-2/madgewick_filter/train_data_imu_pic': 'train_imu_labels.csv',
-    'E:/master-2/madgewick_filter/test_data_imu_pic': 'test_imu_labels.csv'
+    sys.argv[1]: sys.argv[2],
+    sys.argv[3]: sys.argv[4]
 }
 
 # data_roots = {
@@ -25,4 +31,4 @@ for data_root, label_file_name in data_roots.items():
     output_csv_path = os.path.join(data_root, label_file_name)
     df_data_info.to_csv(output_csv_path, index=False)
 
-    print(f'Data and labels info saved to {output_csv_path}')
+    # print(f'Data and labels info saved to {output_csv_path}')
