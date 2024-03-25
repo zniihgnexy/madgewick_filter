@@ -23,12 +23,12 @@ if gpus:
 # df_imu_labels = pd.read_csv(imu_labels_csv_path)
 # imu_data_dir = 'E:/master-2/madgewick_filter/train_data/train_reach/IMU/'
 
-imu_labels_csv_path = 'E:/master-2/madgewick_filter/train_data_imu_pic/train_labels.csv'
+imu_labels_csv_path = 'E:/master-2/madgewick_filter/train_data_imu_pic/train_imu_labels.csv'
 df_imu_labels = pd.read_csv(imu_labels_csv_path)
 imu_data_dir = 'E:/master-2/madgewick_filter/train_data_imu_pic/'
 
 img_width, img_height = 256, 256
-epochs = 100
+epochs = 50
 batch_size = 64
 
 # Splitting IMU data
@@ -92,21 +92,23 @@ history = imu_model.fit(
 
 # Plotting training results for IMU
 plt.figure(figsize=(12, 5))
+
 plt.subplot(1, 2, 1)
 plt.plot(history.history['accuracy'], label='Train Accuracy')
 plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
-plt.title('IMU Accuracy over epochs')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.legend()
+plt.title('IMU Accuracy over epochs', fontsize=18)  # 调整标题字体大小
+plt.xlabel('Epoch', fontsize=15)  # 调整X轴标签字体大小
+plt.ylabel('Accuracy', fontsize=15)  # 调整Y轴标签字体大小
+plt.legend(fontsize=15)  # 调整图例字体大小
 
 plt.subplot(1, 2, 2)
 plt.plot(history.history['loss'], label='Train Loss')
 plt.plot(history.history['val_loss'], label='Validation Loss')
-plt.title('IMU Loss over epochs')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.legend()
+plt.title('IMU Loss over epochs', fontsize=18)  # 调整标题字体大小
+plt.xlabel('Epoch', fontsize=15)  # 调整X轴标签字体大小
+plt.ylabel('Loss', fontsize=15)  # 调整Y轴标签字体大小
+plt.legend(fontsize=15)  # 调整图例字体大小
 
 plt.tight_layout()
 plt.show()
+

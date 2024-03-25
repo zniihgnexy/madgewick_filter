@@ -17,8 +17,8 @@ df_emg_labels = pd.read_csv(emg_labels_csv_path)
 emg_data_dir = 'E:/master-2/madgewick_filter/SplitEMG_train_data_20240312/'
 
 img_width, img_height = 256, 256
-epochs = 200
-batch_size = 128
+epochs = 100
+batch_size = 32
 
 # Splitting EMG data
 train_emg_df, validate_emg_df = train_test_split(df_emg_labels, test_size=0.2, random_state=42, shuffle=True)
@@ -57,6 +57,7 @@ y = Dropout(0.2)(y)
 
 y = Conv2D(16, (3, 3), activation='relu')(y)
 y = MaxPooling2D(2, 2)(y)
+# y = Conv2D(16, (3, 3), activation='relu')(y)
 
 y = Flatten()(y)
 y = Dense(128, activation='relu')(y)
@@ -73,7 +74,7 @@ checkpoint_path = 'E:/master-2/madgewick_filter/training_model/checkpoint/emg_be
 checkpoint = ModelCheckpoint(filepath=checkpoint_path,
                             monitor='val_accuracy',
                             verbose=1,
-                            save_best_only=False,
+                            save_best_only=True,
                             mode='max')
 
 # Train EMG model
@@ -91,18 +92,18 @@ plt.figure(figsize=(12, 5))
 plt.subplot(1, 2, 1)
 plt.plot(history.history['accuracy'], label='Train Accuracy')
 plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
-plt.title('EMG Accuracy over epochs')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.legend()
+plt.title('EMG Accuracy over epochs', fontsize=18)
+plt.xlabel('Epoch', fontsize=15)
+plt.ylabel('Accuracy', fontsize=15)
+plt.legend(fontsize=15)
 
 plt.subplot(1, 2, 2)
 plt.plot(history.history['loss'], label='Train Loss')
 plt.plot(history.history['val_loss'], label='Validation Loss')
-plt.title('EMG Loss over epochs')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.legend()
+plt.title('EMG Loss over epochs', fontsize=18)
+plt.xlabel('Epoch', fontsize=15)
+plt.ylabel('Loss', fontsize=15)
+plt.legend(fontsize=15)
 
 plt.tight_layout()
 plt.show()
